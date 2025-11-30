@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Waygen Waypoint Map Mission Editor</title>
+
+  <!-- ADD THIS SCRIPT BLOCK -->
+  <script>
+
+    // Runtime Polyfill for legacy libraries
+    // This prevents "Uncaught ReferenceError: require is not defined"
+    window.require = function () { return {}; };
+    window.require.main = {};
+
+    // Ensure process exists if the build define missed any spots
+    if (!window.process) {
+      window.process = { env: {}, argv: [] };
+    }
+  </script>
+  <!-- END SCRIPT BLOCK -->
+
+  <style>
+    /* First-paint loading screen - displays immediately before React loads */
+    #loading-screen {
+      display: flex;
+      height: 100vh;
+      width: 100vw;
+      align-items: center;
+      justify-content: center;
+      background-color: #f9fafb;
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 9999;
+    }
+
+    #loading-text {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #2563eb;
+      animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.5;
+      }
+    }
+  </style>
+
+</head>
+
+<body>
+  <div id="root">
+    <!-- This loading screen appears on first paint, before React loads -->
+    <div id="loading-screen">
+      <div id="loading-text">Waygen Loading...</div>
+    </div>
+  </div>
+  <script type="module" src="/src/main.jsx"></script>
+</body>
+
+</html>

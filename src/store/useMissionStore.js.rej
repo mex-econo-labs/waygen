@@ -1,0 +1,27 @@
+--- src/store/useMissionStore.js
++++ src/store/useMissionStore.js
+@@ -54,12 +54,22 @@ export const useMissionStore = create((set, get) => ({
+   })),
+ 
+   addWaypoint: (waypoint) => set((state) => {
++    // Inherit speed and heading from last waypoint if available
++    let speed = state.settings.speed;
++    let heading = 0;
++    
++    if (state.waypoints.length > 0) {
++      const lastWp = state.waypoints[state.waypoints.length - 1];
++      speed = Math.round((lastWp.speed || state.settings.speed) * 10) / 10;
++      heading = lastWp.heading || 0;
++    }
++
+     const newWp = {
+       id: crypto.randomUUID(),
+       ...waypoint,
+       altitude: state.settings.altitude,
+-      speed: state.settings.speed,
++      speed: speed,
+       gimbalPitch: state.settings.gimbalPitch,
+-      heading: 0
++      heading: heading
+     };
+ 

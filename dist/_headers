@@ -1,0 +1,13 @@
+# Cloudflare Pages Headers
+# https://developers.cloudflare.com/pages/configuration/headers/
+
+# 1. HTML Files - Do NOT cache (or cache very briefly)
+# This ensures users always get the latest version of your app (which points to new hashed assets)
+/*
+  Cache-Control: public, max-age=0, must-revalidate
+
+# 2. Static Assets (JS, CSS, Images in assets folder) - Cache FOREVER
+# Vite generates filenames with content hashes (e.g., index.a1b2c3.js)
+# If the file changes, the name changes, so it's safe to cache these indefinitely.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable

@@ -134,8 +134,9 @@ export default function SidebarMain({ currentPolygon, setCurrentPolygon }) {
     }
   };
 
-  const handleFileUpload = async (e) => {
-    const file = e.target.files[0];
+  const [isDragging, setIsDragging] = useState(false);
+
+  const processFile = async (file) => {
     if (!file) return;
     try {
       const { geojson, sessionData } = await parseImport(file);
@@ -192,6 +193,28 @@ export default function SidebarMain({ currentPolygon, setCurrentPolygon }) {
     } catch (err) {
       console.error(err);
       alert("Failed to parse file. Ensure it is a valid KML/KMZ.");
+    }
+  };
+
+  const handleFileUpload = (e) => {
+    processFile(e.target.files[0]);
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      processFile(e.dataTransfer.files[0]);
     }
   };
 
@@ -322,10 +345,21 @@ export default function SidebarMain({ currentPolygon, setCurrentPolygon }) {
 
         {/* Import */}
         <div className="p-3">
-          <label className="flex items-center justify-center gap-2 w-full p-2 bg-blue-50 text-blue-700 rounded-lg border border-blue-100 hover:bg-blue-100 transition-colors cursor-pointer font-medium text-sm">
-            <Upload size={16} /> Import KML/KMZ
+          <label
+            className={`flex items-center justify-center gap-2 w-full py-3 px-2 rounded-lg border transition-all cursor-pointer font-medium text-sm ${isDragging
+                ? 'bg-blue-100 border-blue-500 border-dashed scale-[1.02]'
+                : 'bg-blue-50 text-blue-700 border-blue-100 hover:bg-blue-100'
+              }`}
+            onDragOver={handleDragOver}
+            onDragEnter={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+          >
+            <Upload size={16} className={isDragging ? 'animate-bounce' : ''} />
+            {isDragging ? 'Drop File Here' : 'Import KML/KMZ'}
             <input type="file" onChange={handleFileUpload} className="hidden" accept=".kml,.kmz" />
           </label>
+          <p className="text-center text-xs text-gray-500 mt-1">Click to upload or drag & drop</p>
         </div>
 
         <Section title="Basics" icon={Settings} defaultOpen={true}>

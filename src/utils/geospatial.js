@@ -1,67 +1,93 @@
 import * as turf from '@turf/turf';
 import { FLIGHT_WARNING_THRESHOLD, TAKEOFF_LANDING_OVERHEAD } from './dronePresets';
 
+
 /**
  * Calculates the camera footprint on the ground.
  * @param {Object} center - { lng, lat }
  * @param {number} altitude - Altitude in meters
  * @param {number} heading - Drone heading in degrees (0 = North)
  * @param {number} hfov - Horizontal Field of View in degrees
+ * @param {number} gimbalPitch - Gimbal pitch in degrees (0 = Horizon, -90 = Nadir)
  * @returns {Object} GeoJSON Polygon feature
  */
-export const calculateFootprint = (center, altitude, heading, hfov) => {
+export const calculateFootprint = (center, altitude, heading, hfov, gimbalPitch = -90) => {
     if (!center || !altitude || !hfov) return null;
 
-    // 1. Calculate Dimensions
-    // Width = 2 * h * tan(HFOV / 2)
-    const width = 2 * altitude * Math.tan((hfov * Math.PI) / 360);
-    const height = width * (3 / 4); // 4:3 Aspect Ratio
+    // 1. Convert Inputs
+    const pitchRad = (gimbalPitch * Math.PI) / 180;
+    const aspectRatio = 4 / 3; // Standard Photo Aspect Ratio
+    const hfovRad = (hfov * Math.PI) / 180;
+    // Calculate VFOV from HFOV and Aspect Ratio
+    const vfovRad = 2 * Math.atan(Math.tan(hfovRad / 2) / aspectRatio);
 
-    // 2. Calculate Corners (relative to center, before rotation)
-    // We need to find the distance to the corners to use turf.destination
-    // Actually, it's easier to calculate the 4 corners as offsets in meters and then map them to coordinates.
-    // But turf.destination takes bearing and distance.
+    const halfH = Math.tan(hfovRad / 2);
+    const halfV = Math.tan(vfovRad / 2);
 
-    // Let's calculate the half-width and half-height
-    const hw = width / 2;
-    const hh = height / 2;
-
-    // Distance from center to corner
-    const diagDist = Math.sqrt(hw * hw + hh * hh);
-
-    // Bearings to corners (relative to North 0, clockwise)
-    // Top-Right (NE): atan(w/h) -> but wait, heading is 0.
-    // Let's assume the drone is pointing North (0).
-    // Top-Right is at angle atan(hw/hh).
-    const angleTR = (Math.atan2(hw, hh) * 180) / Math.PI;
-    const angleBR = 180 - angleTR;
-    const angleBL = 180 + angleTR;
-    const angleTL = 360 - angleTR;
-
-    // 3. Generate the 4 corners using turf.destination
-    // We add the drone's heading to the corner angles.
-    const centerPt = turf.point([center.lng, center.lat]);
-
-    const p1 = turf.destination(centerPt, diagDist / 1000, heading + angleTR, { units: 'kilometers' });
-    const p2 = turf.destination(centerPt, diagDist / 1000, heading + angleBR, { units: 'kilometers' });
-    const p3 = turf.destination(centerPt, diagDist / 1000, heading + angleBL, { units: 'kilometers' });
-    const p4 = turf.destination(centerPt, diagDist / 1000, heading + angleTL, { units: 'kilometers' });
-
-    // 4. Create Polygon
-    const coordinates = [
-        [
-            p1.geometry.coordinates,
-            p2.geometry.coordinates,
-            p3.geometry.coordinates,
-            p4.geometry.coordinates,
-            p1.geometry.coordinates // Close the loop
-        ]
+    // 2. Define 4 corners in Camera Space (Normalized at Z=1)
+    // Camera Frame: X=Right, Y=Up, Z=Forward (Look Dir)
+    // Order: TR, BR, BL, TL
+    const cornersCam = [
+        { x: halfH, y: halfV, z: 1 },   // TR
+        { x: halfH, y: -halfV, z: 1 },  // BR
+        { x: -halfH, y: -halfV, z: 1 }, // BL
+        { x: -halfH, y: halfV, z: 1 }   // TL
     ];
 
-    return turf.polygon(coordinates, {
+    const centerPt = turf.point([center.lng, center.lat]);
+    const coords = [];
+    const MAX_RENDER_DIST = altitude * 10; // Clamp for horizon views
+
+    for (const p of cornersCam) {
+        // 3. Rotate by Pitch to get Body Frame Vector
+        // Drone Body Frame: X=Right, Y=Forward, Z=Up
+        // Rotation around X-axis
+        const rx = p.x;
+        const ry = p.z * Math.cos(pitchRad) - p.y * Math.sin(pitchRad);
+        const rz = p.z * Math.sin(pitchRad) + p.y * Math.cos(pitchRad);
+
+        let dist, angle;
+
+        // 4. Intersect with Ground (Z = -altitude)
+        // Ray: t * (rx, ry, rz) = (..., ..., -altitude)
+        // If rz >= 0, ray points up/flat (Sky/Horizon)
+        if (rz >= -0.001) {
+            // Horizon Case: Clamp to Max Distance
+            const horizontalMag = Math.sqrt(rx * rx + ry * ry);
+            const t = MAX_RENDER_DIST / horizontalMag;
+            const dx = t * rx;
+            const dy = t * ry;
+            dist = Math.sqrt(dx * dx + dy * dy);
+            angle = Math.atan2(dx, dy) * (180 / Math.PI);
+        } else {
+            // Ground Intersection
+            const t = -altitude / rz;
+            const dx = t * rx;
+            const dy = t * ry;
+            
+            // Calculate ground distance and angle
+            dist = Math.sqrt(dx * dx + dy * dy);
+            
+            // Clamp large distances (e.g. near horizon)
+            if (dist > MAX_RENDER_DIST) dist = MAX_RENDER_DIST;
+
+            angle = Math.atan2(dx, dy) * (180 / Math.PI);
+        }
+
+        // 5. Apply Heading and Geodesic Projection
+        const finalBearing = heading + angle;
+        const dest = turf.destination(centerPt, dist / 1000, finalBearing, { units: 'kilometers' });
+        coords.push(dest.geometry.coordinates);
+    }
+
+    // Close the polygon loop
+    coords.push(coords[0]);
+
+    return turf.polygon([coords], {
         altitude,
         heading,
-        hfov
+        hfov,
+        pitch: gimbalPitch
     });
 };
 

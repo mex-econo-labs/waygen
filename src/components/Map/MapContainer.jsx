@@ -859,7 +859,8 @@ export default function MapContainer({ onPolygonDrawn, polygon }) {
           { lng: wp.lng, lat: wp.lat },
           settings.altitude,
           heading,
-          settings.customFOV
+          settings.customFOV,
+          settings.gimbalPitch
         ),
         properties: {
           index: index + 1,
@@ -870,7 +871,7 @@ export default function MapContainer({ onPolygonDrawn, polygon }) {
 
     map.current.getSource('footprints').setData({ type: 'FeatureCollection', features });
 
-  }, [waypoints, settings.showFootprints, settings.altitude, settings.customFOV, settings.footprintColor]);
+  }, [waypoints, settings.showFootprints, settings.altitude, settings.customFOV, settings.footprintColor, settings.gimbalPitch]);
 
   // Ensure default radius is reasonable on load
   useEffect(() => {

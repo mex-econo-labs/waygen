@@ -18,6 +18,7 @@ export const useMissionStore = create((set, get) => ({
   // Calculated mission metrics
   calculatedMaxSpeed: 0,
   minSegmentDistance: 0,
+  calculatedOverlapDistance: 0,
 
   // History Stack
   past: [],
@@ -261,7 +262,7 @@ export const useMissionStore = create((set, get) => ({
     // Determine HFOV: use preset HFOV if available, otherwise customFOV from settings
     const hfov = dronePreset?.hfov || settings.customFOV;
 
-    const { maxSpeed, minSegmentDistance } = calculateMaxSpeed(
+    const { maxSpeed, minSegmentDistance, forwardOverlapDistance } = calculateMaxSpeed(
       waypoints,
       photoInterval,
       settings.altitude,
@@ -272,7 +273,8 @@ export const useMissionStore = create((set, get) => ({
 
     set({
       calculatedMaxSpeed: maxSpeed,
-      minSegmentDistance: minSegmentDistance
+      minSegmentDistance: minSegmentDistance,
+      calculatedOverlapDistance: forwardOverlapDistance
     });
   },
 
@@ -313,6 +315,7 @@ export const useMissionStore = create((set, get) => ({
     currentMissionFilename: null,
     calculatedMaxSpeed: 0,
     minSegmentDistance: 0,
+    calculatedOverlapDistance: 0,
     resetTrigger: state.resetTrigger + 1
   }))
 }));

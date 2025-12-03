@@ -40,7 +40,7 @@ export default function SidebarMain({ currentPolygon, setCurrentPolygon }) {
     setWaypoints, updateSelectedWaypoints, deleteSelectedWaypoints, insertWaypoint,
     undo, redo, updateSettings, resetMission, fitMapToWaypoints,
     currentMissionFilename, setMissionFilename,
-    calculatedMaxSpeed, minSegmentDistance
+    calculatedMaxSpeed, minSegmentDistance, calculatedOverlapDistance
   } = useMissionStore();
 
   // Dialog state for KMZ download
@@ -725,7 +725,7 @@ export default function SidebarMain({ currentPolygon, setCurrentPolygon }) {
           </div>
           <div className="bg-white border rounded p-2 text-center">
             <div className="text-xs text-gray-400 font-bold uppercase">Max Speed</div>
-            <div className="font-bold text-gray-700" title={`Based on ${Math.round(minSegmentDistance)}m minimum segment`}>
+            <div className="font-bold text-gray-700" title={`Based on ${Math.round(calculatedOverlapDistance)}m forward travel`}>
               {waypoints.length >= 2 && calculatedMaxSpeed > 0
                 ? `${toDisplay(calculatedMaxSpeed, settings.units).toFixed(1)} ${settings.units === 'metric' ? 'm/s' : 'ft/s'}`
                 : settings.units === 'metric' ? '0 m/s' : '0 ft/s'

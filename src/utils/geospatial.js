@@ -163,7 +163,8 @@ export const calculateMaxSpeed = (waypoints, photoInterval, altitude, hfov, gimb
 
     return {
         maxSpeed: Math.max(0, maxSpeed), // Ensure non-negative
-        minDistance
+        minDistance,
+        forwardOverlapDistance
     };
 };
 

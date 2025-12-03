@@ -353,7 +353,7 @@ export default function SidebarMain({ currentPolygon, setCurrentPolygon }) {
         {/* Import */}
         <div className="p-3">
           <label
-            className={`flex items-center justify-center gap-2 w-full py-3 px-2 rounded-lg border transition-all cursor-pointer font-medium text-sm ${isDragging
+            className={`flex items-center justify-center gap-2 w-full py-3 px-2 rounded-lg border transition-all cursor-pointer font-bold ${isDragging
                 ? 'bg-blue-100 border-blue-500 border-dashed scale-[1.02]'
                 : 'bg-blue-50 text-blue-700 border-blue-100 hover:bg-blue-100'
               }`}

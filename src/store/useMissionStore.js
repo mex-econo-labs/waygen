@@ -104,9 +104,12 @@ export const useMissionStore = create((set, get) => ({
     };
   }),
 
-  updateSettings: (newSettings) => set((state) => ({
-    settings: { ...state.settings, ...newSettings }
-  })),
+  updateSettings: (newSettings) => {
+    set((state) => ({
+      settings: { ...state.settings, ...newSettings }
+    }));
+    get().calculateMissionMetrics();
+  },
 
   // Selection Logic
   selectWaypoint: (id, multi) => set((state) => ({
@@ -253,12 +256,23 @@ export const useMissionStore = create((set, get) => ({
   calculateMissionMetrics: () => {
     const { waypoints, settings } = get();
     const photoInterval = settings.photoInterval;
+    const dronePreset = getDronePreset(settings.selectedDrone);
 
-    const { maxSpeed, minDistance } = calculateMaxSpeed(waypoints, photoInterval);
+    // Determine HFOV: use preset HFOV if available, otherwise customFOV from settings
+    const hfov = dronePreset?.hfov || settings.customFOV;
+
+    const { maxSpeed, minSegmentDistance } = calculateMaxSpeed(
+      waypoints,
+      photoInterval,
+      settings.altitude,
+      hfov,
+      settings.gimbalPitch,
+      settings.frontOverlap
+    );
 
     set({
       calculatedMaxSpeed: maxSpeed,
-      minSegmentDistance: minDistance
+      minSegmentDistance: minSegmentDistance
     });
   },
 

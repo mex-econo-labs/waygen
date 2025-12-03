@@ -107,7 +107,14 @@ export default function SidebarMain({ currentPolygon, setCurrentPolygon }) {
 
     // Step 2: Calculate max safe speed based on photo interval
     const photoInterval = currentSettings.photoInterval;
-    const { maxSpeed } = calculateMaxSpeed(initialPath, photoInterval);
+    const { maxSpeed } = calculateMaxSpeed(
+      initialPath, 
+      photoInterval,
+      currentSettings.altitude,
+      effectiveFOV,
+      currentSettings.gimbalPitch,
+      currentSettings.frontOverlap
+    );
 
     // Step 3: Regenerate path with calculated speed
     const finalSettings = {

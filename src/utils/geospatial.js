@@ -92,6 +92,29 @@ export const calculateFootprint = (center, altitude, heading, hfov, gimbalPitch 
 };
 
 /**
+ * Calculates the vertical dimension (along the direction of flight) of the camera's ground footprint.
+ * Assumes nadir shot for simplicity in this calculation context.
+ * @param {number} altitude - Altitude in meters
+ * @param {number} hfov - Horizontal Field of View in degrees
+ * @param {number} gimbalPitch - Gimbal pitch in degrees (0 = Horizon, -90 = Nadir)
+ * @returns {number} Vertical footprint dimension in meters
+ */
+export const calculateVerticalFootprintDimension = (altitude, hfov, gimbalPitch) => {
+    // Standard Photo Aspect Ratio (e.g., 4:3 for many drones)
+    const aspectRatio = 4 / 3; 
+
+    // Convert HFOV to VFOV
+    const hfovRad = (hfov * Math.PI) / 180;
+    const vfovRad = 2 * Math.atan(Math.tan(hfovRad / 2) / aspectRatio);
+
+    // Calculate vertical dimension on ground (assuming nadir for simplicity)
+    // This is a simplified model, for true oblique angles, more complex ray casting is needed.
+    // However, for typical mapping (near nadir), this approximation is sufficient.
+    const verticalDimension = 2 * altitude * Math.tan(vfovRad / 2);
+    return verticalDimension;
+}
+
+/**
  * Calculate distance between two waypoints in meters
  * @param {Object} wp1 - First waypoint { lng, lat }
  * @param {Object} wp2 - Second waypoint { lng, lat }
@@ -104,25 +127,39 @@ export const calculateDistance = (wp1, wp2) => {
 };
 
 /**
- * Calculate maximum safe speed based on waypoint geometry and photo interval
- * Ensures drone doesn't arrive at next waypoint before camera is ready
- * @param {Array} waypoints - Array of waypoint objects with lng, lat
+ * Calculate maximum safe speed based on forward overlap travel and photo interval.
+ * Ensures drone doesn't arrive at next photo point before camera is ready.
+ * @param {Array} waypoints - Array of waypoint objects with lng, lat (used for minDistance only)
  * @param {number} photoInterval - Minimum seconds between photos
+ * @param {number} altitude - Altitude in meters
+ * @param {number} hfov - Horizontal Field of View in degrees
+ * @param {number} gimbalPitch - Gimbal pitch in degrees (0 = Horizon, -90 = Nadir)
+ * @param {number} frontOverlap - Desired front overlap percentage (0-100)
  * @returns {Object} { maxSpeed: number, minDistance: number }
  */
-export const calculateMaxSpeed = (waypoints, photoInterval) => {
-    if (!waypoints || waypoints.length < 2 || !photoInterval || photoInterval <= 0) {
+export const calculateMaxSpeed = (waypoints, photoInterval, altitude, hfov, gimbalPitch, frontOverlap) => {
+    // Validate essential parameters for speed calculation based on overlap
+    if (!photoInterval || photoInterval <= 0 || !altitude || altitude <= 0 || !hfov || hfov <= 0) {
         return { maxSpeed: 0, minDistance: 0 };
     }
 
-    const distances = [];
-    for (let i = 0; i < waypoints.length - 1; i++) {
-        const distance = calculateDistance(waypoints[i], waypoints[i + 1]);
-        distances.push(distance);
-    }
+    const verticalFootprint = calculateVerticalFootprintDimension(altitude, hfov, gimbalPitch);
+    
+    // Calculate the distance the drone travels per photo to achieve desired front overlap
+    // frontOverlap is a percentage, so convert to decimal
+    const forwardOverlapDistance = verticalFootprint * (1 - (frontOverlap / 100));
 
-    const minDistance = Math.min(...distances);
-    const maxSpeed = minDistance / photoInterval;
+    const maxSpeed = forwardOverlapDistance / photoInterval;
+
+    // Still calculate minDistance between waypoints for other potential uses, though not for maxSpeed anymore
+    const distances = [];
+    if (waypoints && waypoints.length >= 2) {
+        for (let i = 0; i < waypoints.length - 1; i++) {
+            const distance = calculateDistance(waypoints[i], waypoints[i + 1]);
+            distances.push(distance);
+        }
+    }
+    const minDistance = distances.length > 0 ? Math.min(...distances) : 0;
 
     return {
         maxSpeed: Math.max(0, maxSpeed), // Ensure non-negative

@@ -363,7 +363,7 @@ export default function SidebarMain({ currentPolygon, setCurrentPolygon }) {
             onDrop={handleDrop}
           >
             <Upload size={16} className={isDragging ? 'animate-bounce' : ''} />
-            {isDragging ? 'Drop File Here' : 'Import KML/KMZ'}
+            {isDragging ? 'Drop File Here' : 'Import KMZ Mission'}
             <input type="file" onChange={handleFileUpload} className="hidden" accept=".kml,.kmz" />
           </label>
           <p className="text-center text-xs text-gray-500 mt-1">Click to upload or drag & drop</p>
@@ -771,7 +771,7 @@ export default function SidebarMain({ currentPolygon, setCurrentPolygon }) {
         </div>
 
         <button onClick={handleDownloadClick} disabled={waypoints.length === 0} className="w-full mt-3 bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold p-3 rounded-lg shadow-md flex items-center justify-center gap-2 transition-all">
-          <Download size={18} /> Download KMZ
+          <Download size={18} /> Download KMZ Mission
         </button>
       </div >
 

@@ -144,7 +144,11 @@ export const downloadKMZ = async (waypoints, settings, filename = "MiniMission",
     let useStraightLine = 0;
 
     if (effectiveStraightenLegs) {
-      waypointTurnMode = 'toPointAndStopWithDiscontinuityCurvature';
+      if (isFirst || isLast) {
+        waypointTurnMode = 'toPointAndStopWithDiscontinuityCurvature';
+      } else {
+        waypointTurnMode = 'toPointAndPassWithDiscontinuityCurvature';
+      }
       useStraightLine = 1;
     } else {
       // Curved logic

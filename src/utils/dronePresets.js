@@ -23,12 +23,35 @@ export const TAKEOFF_LANDING_OVERHEAD = 0; // 2 minutes
  * @property {number} maxFlightTime - Maximum practical flight time in minutes (~90% battery)
  */
 export const DRONE_PRESETS = {
+
+    'air-3': {
+        name: 'DJI Air 3/3S',
+        hfov: 84,
+        photoInterval: 5.5,
+        maxFlightTime: 46
+    },
+
+    'mavic-3-pro': {
+        name: 'DJI Mavic 3 Pro',
+        hfov: 84,
+        photoInterval: 5.5,
+        maxFlightTime: 43
+    },
+
+    'mavic-4-pro': {
+        name: 'DJI Mavic 4 Pro',
+        hfov: 72,
+        photoInterval: 5.5, // Placeholder - pending research
+        maxFlightTime: 40
+    },
+
     'mini-4-pro': {
         name: 'DJI Mini 4 Pro',
         hfov: 82.1,
         photoInterval: 5.5,
         maxFlightTime: 31
     },
+
     'mini-5-pro': {
         name: 'DJI Mini 5 Pro',
         hfov: 84,
@@ -36,12 +59,7 @@ export const DRONE_PRESETS = {
         maxFlightTime: 40,
         isDefault: true
     },
-    'mavic-4-pro': {
-        name: 'DJI Mavic 4 Pro',
-        hfov: 72,
-        photoInterval: 5.5, // Placeholder - pending research
-        maxFlightTime: 40
-    },
+
     'custom': {
         name: 'Custom',
         hfov: null, // User must provide

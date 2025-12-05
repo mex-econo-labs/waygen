@@ -17,7 +17,8 @@
 │   ├── CODE_QUALITY.md
 │   ├── COMPONENTS.md
 │   ├── DEPENDENCIES.md
-│   └── FILE_TREE.md
+│   ├── FILE_TREE.md
+│   └── REFACTORING_PLAN.md
 └── src/
     ├── App.jsx
     ├── main.jsx

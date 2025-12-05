@@ -2,101 +2,159 @@
 
 This document provides a detailed overview of the Waygen codebase architecture, component relationships, and implementation details.
 
+**Last Updated**: 2025-12-05
+
 ---
 
-## 🏛️ System Architecture
+## System Architecture
 
-Waygen follows a **React-based component architecture** with unidirectional data flow managed by Zustand. The application consists of three main layers:
+Waygen follows a **React-based component architecture** with unidirectional data flow managed by Zustand. The application consists of five main layers:
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                      UI Layer (React)                        │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐      │
-│  │ MapContainer │  │ SidebarMain  │  │  SearchBar   │      │
-│  └──────────────┘  └──────────────┘  └──────────────┘      │
-│         │                 │                                 │
-│         │          ┌──────┴───────────┐                     │
-│         │          │ EditSelectedPanel│                     │
-│         │          └──────────────────┘                     │
-│         │          ┌──────────────────┐ ┌─────────────────┐ │
-│         │          │  DownloadDialog  │ │FlightWarningDial│ │
-│         │          └──────────────────┘ └─────────────────┘ │
-└─────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│                       UI Layer (React)                          │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐          │
+│  │ MapContainer │  │ SidebarMain  │  │  SearchBar   │          │
+│  │   (1,011)    │  │    (628)     │  │     (24)     │          │
+│  └──────────────┘  └──────────────┘  └──────────────┘          │
+│         │                 │                                     │
+│         │          ┌──────┴───────────┐                        │
+│         │          │ EditSelectedPanel│                        │
+│         │          │      (244)       │                        │
+│         │          └──────────────────┘                        │
+│         │          ┌──────────────────┐ ┌──────────────────┐   │
+│         │          │ MissionMetrics   │ │   Dialogs        │   │
+│         │          │      (120)       │ │ Download (182)   │   │
+│         │          └──────────────────┘ │ Warning (98)     │   │
+│         │                               └──────────────────┘   │
+└─────────────────────────────────────────────────────────────────┘
                             ↕
-┌─────────────────────────────────────────────────────────────┐
-│                   State Layer (Zustand)                      │
-│  ┌──────────────────────────────────────────────────────┐   │
-│  │              useMissionStore.js                      │   │
-│  │  • waypoints[]    • selectedIds[]                   │   │
-│  │  • settings{}     • past[]  • future[]              │   │
-│  │  • metrics (maxSpeed, minDistance)                   │   │
-│  └──────────────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│                    Hooks & Context Layer                        │
+│  ┌──────────────────────┐  ┌──────────────────────────────┐    │
+│  │ useMissionGeneration │  │    MapboxDrawContext         │    │
+│  │        (152)         │  │          (15)                │    │
+│  └──────────────────────┘  └──────────────────────────────┘    │
+└─────────────────────────────────────────────────────────────────┘
                             ↕
-┌─────────────────────────────────────────────────────────────┐
-│              Logic & Utility Layer                           │
-│  ┌─────────────────┐  ┌──────────────┐  ┌──────────────┐   │
-│  │ pathGenerator.js│  │djiExporter.js│  │geospatial.js │   │
-│  └─────────────────┘  └──────────────┘  └──────────────┘   │
-│  ┌─────────────────┐  ┌──────────────┐  ┌──────────────┐   │
-│  │ kmlImporter.js  │  │DragRectangle │  │dronePresets  │   │
-│  └─────────────────┘  └──────────────┘  └──────────────┘   │
-│  ┌─────────────────┐                                        │
-│  │ units.js        │  │ uuid.js       │                             │
-│  └─────────────────┘  └───────────────┘                             │
-└─────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│                    State Layer (Zustand)                        │
+│  ┌──────────────────────────────────────────────────────────┐  │
+│  │                  useMissionStore.js (317)                │  │
+│  │  • waypoints[]    • selectedIds[]    • settings{}       │  │
+│  │  • past[]         • future[]         • metrics          │  │
+│  └──────────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────┘
                             ↕
-┌─────────────────────────────────────────────────────────────┐
-│             External Libraries & Services                    │
-│  • Mapbox GL JS  • Turf.js  • MapboxDraw  • JSZip          │
-└─────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│                  Logic & Utility Layer                          │
+│  ┌────────────────┐  ┌────────────────┐  ┌────────────────┐    │
+│  │pathGenerator.js│  │ djiExporter.js │  │ geospatial.js  │    │
+│  │     (332)      │  │     (220)      │  │     (253)      │    │
+│  └────────────────┘  └────────────────┘  └────────────────┘    │
+│  ┌────────────────┐  ┌────────────────┐  ┌────────────────┐    │
+│  │ kmlImporter.js │  │DragRectangle.js│  │dronePresets.js │    │
+│  │     (135)      │  │     (113)      │  │     (111)      │    │
+│  └────────────────┘  └────────────────┘  └────────────────┘    │
+│  ┌────────────────┐  ┌────────────────┐  ┌────────────────┐    │
+│  │  constants.js  │  │    units.js    │  │    uuid.js     │    │
+│  │      (16)      │  │      (23)      │  │      (18)      │    │
+│  └────────────────┘  └────────────────┘  └────────────────┘    │
+└─────────────────────────────────────────────────────────────────┘
+                            ↕
+┌─────────────────────────────────────────────────────────────────┐
+│               External Libraries & Services                     │
+│  • Mapbox GL JS  • Turf.js  • MapboxDraw  • JSZip              │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 📦 Component Breakdown
+## Directory Structure
 
-### Core Components
-
-#### **App.jsx** - Application Root
-**Responsibility**: Top-level layout and component orchestration.
-
-#### **MapContainer.jsx** - Map Engine
-**Responsibility**: Mapbox integration, rendering, and user interactions. Receives `polygon` prop for synchronization.
-
-**Key Features:**
-- **Layers**:
-  - `mission-path`: LineString connecting waypoints.
-  - `footprints-fill`: Polygon fill for camera coverage (alpha stacked).
-  - `footprints-outline`: Polygon outline for camera coverage.
-  - `waypoints-symbol`: Teardrop icons (Blue/Red).
-- **Interactions**:
-  - Drag & Drop (Alt + Drag).
-  - Box Selection (Shift + Drag).
-  - Custom Draw Modes (Rectangle, Circle).
-
-#### **SidebarMain.jsx** - Mission Control Panel
-**Responsibility**: User interface for mission configuration.
-
-**Sub-Components**:
-- **EditSelectedPanel**: Replaces sidebar content when waypoints are selected. Allows bulk editing.
-- **DownloadDialog**: Configures export settings (Filename, End Action).
-- **FlightWarningDialog**: Alerts user if mission exceeds drone capabilities.
-
-**Key Features**:
-- Path Generation (Grid/Orbit).
-- Mission Metrics Display (Distance, Time, Max Speed).
-- Real-time Flight Warning System.
-
-#### **SearchBar.jsx** - Geocoding Interface
-**Responsibility**: Location search and navigation using Mapbox Geocoder.
-
-#### **DrawToolbar.jsx** - Drawing Tool Selector
-**Responsibility**: UI for selecting drawing modes (`simple_select`, `add_waypoint`, `draw_rectangle`, `draw_polygon`, `drag_circle`).
+```
+src/
+├── App.jsx                    # Application root with context provider
+├── main.jsx                   # Entry point
+├── index.css                  # Global styles
+├── contexts/
+│   └── MapboxDrawContext.jsx  # Mapbox Draw context (replaces window global)
+├── hooks/
+│   └── useMissionGeneration.js # Path generation logic hook
+├── store/
+│   └── useMissionStore.js     # Zustand state management
+├── components/
+│   ├── Map/
+│   │   ├── MapContainer.jsx   # Main map component
+│   │   └── DrawToolbar.jsx    # Drawing mode toolbar
+│   ├── Sidebar/
+│   │   ├── SidebarMain.jsx    # Main control panel
+│   │   ├── EditSelectedPanel.jsx # Bulk waypoint editor
+│   │   └── MissionMetrics.jsx # Stats display (2x2 grid)
+│   ├── Dialogs/
+│   │   ├── DownloadDialog.jsx # Export configuration
+│   │   └── FlightWarningDialog.jsx # Duration warning
+│   └── Common/
+│       └── SearchBar.jsx      # Location geocoder
+├── logic/
+│   ├── pathGenerator.js       # Grid/Orbit path algorithms
+│   ├── DragRectangleMode.js   # Custom Mapbox Draw mode
+│   └── DirectSelectRectangleMode.js # Rectangle editing mode
+└── utils/
+    ├── constants.js           # Centralized magic numbers
+    ├── djiExporter.js         # KMZ file generation
+    ├── dronePresets.js        # Drone specifications
+    ├── geospatial.js          # Mapping calculations
+    ├── kmlImporter.js         # KML/KMZ parsing
+    ├── units.js               # Unit conversions
+    └── uuid.js                # UUID generation
+```
 
 ---
 
-## 🧠 State Management
+## Data Flow
+
+### Component Communication
+
+```
+                    App.jsx
+                       │
+        ┌──────────────┼──────────────┐
+        │              │              │
+        ▼              │              ▼
+   MapContainer        │        SidebarMain
+        │              │              │
+        │    MapboxDrawContext        │
+        │         (shared)            │
+        │              │              │
+        └──────────────┼──────────────┘
+                       │
+                       ▼
+               useMissionStore
+                  (Zustand)
+```
+
+### Context Pattern
+
+**MapboxDrawContext** enables MapContainer to share its Mapbox Draw instance with SidebarMain without using window globals:
+
+```jsx
+// App.jsx
+const [mapboxDraw, setMapboxDraw] = useState(null);
+
+<MapboxDrawContext.Provider value={mapboxDraw}>
+  <MapContainer onDrawReady={setMapboxDraw} />
+  <SidebarMain />
+</MapboxDrawContext.Provider>
+
+// SidebarMain.jsx
+const mapboxDraw = useMapboxDraw();
+mapboxDraw.changeMode('simple_select');
+```
+
+---
+
+## State Management
 
 ### Zustand Store Structure
 
@@ -107,12 +165,12 @@ Waygen follows a **React-based component architecture** with unidirectional data
   // Primary State
   waypoints: Array<Waypoint>,
   selectedIds: Array<string>,
-  
-  // History
+
+  // History (Undo/Redo)
   past: Array<Array<Waypoint>>,
   future: Array<Array<Waypoint>>,
-  
-  // Global Settings
+
+  // Mission Settings
   settings: {
     altitude: 60,
     speed: 10,
@@ -132,14 +190,15 @@ Waygen follows a **React-based component architecture** with unidirectional data
     selectedDrone: 'dji_mini_5_pro',
     straightenLegs: false,
     units: 'metric',
-    orbitRadius: 50,
-    missionEndAction: 'goHome'
+    missionEndAction: 'goHome',
+    eliminateExtraYaw: false
   },
-  
-  // Metrics
+
+  // Calculated Metrics
   calculatedMaxSpeed: number,
   minSegmentDistance: number,
-  
+  calculatedOverlapDistance: number,
+
   // Metadata
   currentMissionFilename: string | null,
   resetTrigger: number
@@ -148,108 +207,152 @@ Waygen follows a **React-based component architecture** with unidirectional data
 
 ### Store Actions
 
-#### Waypoint Management
-- `setWaypoints`, `addWaypoint`, `updateWaypoint`, `updateSelectedWaypoints`, `deleteSelectedWaypoints`.
-
-#### Selection
-- `selectWaypoint`, `setSelectedIds`, `clearSelection`.
-
-#### History
-- `undo`, `redo`.
-
-#### Settings
-- `updateSettings`.
-
-#### Metrics
-- `calculateMissionMetrics`: Updates `calculatedMaxSpeed` and `minSegmentDistance`.
-- `getMissionTime`: Returns estimated seconds.
-- `getFlightWarningLevel`: Returns 'safe', 'warning', or 'critical'.
+| Category | Actions |
+|----------|---------|
+| Waypoints | `setWaypoints`, `addWaypoint`, `updateWaypoint`, `updateSelectedWaypoints`, `deleteSelectedWaypoints`, `insertWaypoint` |
+| Selection | `selectWaypoint`, `setSelectedIds`, `clearSelection` |
+| History | `undo`, `redo` |
+| Settings | `updateSettings` |
+| Metrics | `calculateMissionMetrics`, `getMissionTime`, `getFlightWarningLevel`, `getTotalDistance` |
+| Mission | `resetMission`, `setMissionFilename`, `fitMapToWaypoints` |
 
 ---
 
-## ⚙️ Logic Modules
+## Logic Modules
 
 ### pathGenerator.js
-**Exports**: `generatePhotogrammetryPath`, `generateOrbitPath`.
-- **Grid**: Generates serpentine path based on overlap and FOV.
-- **Orbit**: Generates circular path around centroid.
 
-### djiExporter.js
-**Export**: `downloadKMZ`.
-- Generates DJI-compatible KMZ with `template.kml` and `waylines.wpml`.
-- Handles `missionEndAction` and waypoint actions (Gimbal, Photo, Record).
+**Exports**: `generatePhotogrammetryPath`
+
+**Grid Mode**:
+- Generates serpentine (boustrophedon) path
+- Calculates line spacing from FOV and overlap
+- Clips lines to polygon boundary
+- Filters short corner clips
+- Interpolates points if `generateEveryPoint` enabled
+
+**Orbit Mode**:
+- Generates circular path around polygon centroid
+- Calculates radius from average vertex distance
+- Supports fractional orbits and start angle
 
 ### geospatial.js
-**Exports**:
-- `calculateFootprint`: Generates camera coverage polygon.
-- `calculateMaxSpeed`: Determines safe speed based on photo interval.
-- `calculateMissionTime`: Estimates total flight time.
-- `getFlightWarningLevel`: Compares mission time to drone battery limit.
 
-### dronePresets.js
-**Exports**: `getDronePreset`.
-- Database of drone specs (FOV, Battery Life, Photo Interval).
+**Key Exports**:
 
-### units.js
-**Exports**: `toDisplay`, `toMetric`.
-- Handles unit conversion between metric (internal) and imperial (display).
-197: 
-198: ### uuid.js
-199: **Exports**: `generateUUID`.
-200: - Generates UUID v4 strings.
-201: - Polyfills `crypto.randomUUID` for non-secure contexts (HTTP).
+| Function | Purpose |
+|----------|---------|
+| `calculateFootprint` | Camera coverage polygon |
+| `calculateMaxSpeed` | Safe speed from photo interval |
+| `calculateMissionTime` | Total flight duration |
+| `getFlightWarningLevel` | Battery warning status |
+| `getMidpoint` | Midpoint between waypoints |
+| `getBearing` | Bearing between waypoints |
+| `getRectangleBounds` | Bounds from corner points |
+| `calculateDistance` | Distance in meters |
 
----
+### djiExporter.js
 
-## 🔄 Rendering Pipeline
+**Export**: `downloadKMZ`
 
-### Waypoint Rendering
-**MapContainer.jsx** uses Mapbox GL JS's data-driven styling.
-- **Source**: `waypoints` (GeoJSON FeatureCollection).
-- **Layer**: `waypoints-symbol`.
-- **Styling**: Icon image switches between `teardrop` and `teardrop-selected` based on `selected` property.
+Generates DJI-compatible KMZ containing:
+- `template.kml` - Mission metadata
+- `waylines.wpml` - Waypoint data with actions
 
-### Footprint Rendering
-- **Source**: `footprints` (GeoJSON FeatureCollection).
-- **Layers**:
-  - `footprints-fill`: Low opacity fill for visualizing overlap density.
-  - `footprints-outline`: Solid outline for boundary definition.
-- **Color**: Controlled by `settings.footprintColor`.
+### constants.js
 
-### Mission Path Rendering
-- **Source**: `mission-path` (GeoJSON LineString).
-- **Layer**: `mission-path-line`.
-- **Styling**: Blue line connecting all waypoints in order.
+Centralized magic numbers:
+
+```javascript
+export const DEFAULT_HFOV = 82.1;
+export const ASPECT_RATIO_4_3 = 4 / 3;
+export const METERS_PER_DEGREE_LAT = 111111;
+export const COORD_EPSILON = 0.0001;
+export const DJI_DRONE_ENUM = 68;
+export const DJI_DRONE_SUB_ENUM = 0;
+```
 
 ---
 
-## Known Technical Debt
+## Rendering Pipeline
 
-See [CODE_QUALITY.md](./CODE_QUALITY.md) for detailed analysis. Summary:
+### Mapbox Layers
 
-### Critical Issues
+| Layer ID | Source | Type | Purpose |
+|----------|--------|------|---------|
+| `mission-path` | `mission-path` | line | Blue line connecting waypoints |
+| `footprints-fill` | `footprints` | fill | Camera coverage (alpha stacked) |
+| `footprints-outline` | `footprints` | line | Coverage boundary |
+| `waypoints-symbol` | `waypoints` | symbol | Teardrop icons |
 
-| Component | Lines | Issue |
-|-----------|-------|-------|
-| `MapContainer.jsx` | 1,011 | God component: 20+ event listeners, 15 useEffect hooks |
-| `SidebarMain.jsx` | 816 | Mixed responsibilities: file I/O, path generation, settings UI |
-| `pathGenerator.js` | 321 | 35+ conditional branches, complex nesting |
+### Waypoint Styling
 
-### Architectural Concerns
+Data-driven styling switches icon based on selection state:
 
-1. **Global State Coupling**: `window.mapboxDraw` creates hidden dependency between MapContainer and SidebarMain. Should be replaced with React Context.
-
-2. **Store Access Pattern**: Direct `useMissionStore.getState()` calls (15+ locations) bypass React subscriptions, causing potential stale state issues.
-
-3. **Magic Numbers**: 8+ hardcoded values (82.1 HFOV, 111111 meters/degree) scattered across files instead of centralized constants.
-
-### Recommended Refactoring Priorities
-
-1. Split MapContainer into: `<MapCore />`, `<WaypointLayer />`, `<DrawingManager />`, `useWaypointDragDrop()`
-2. Split SidebarMain into: `<MissionSettings />`, `<MissionMetrics />`, `useMissionGeneration()`
-3. Replace `window.mapboxDraw` with `MapboxDrawContext`
-4. Extract magic numbers to `src/utils/constants.js`
+```javascript
+'icon-image': [
+  'case',
+  ['get', 'selected'], 'teardrop-selected',  // Red
+  'teardrop'                                   // Blue
+]
+```
 
 ---
 
-**Last Updated**: 2025-12-05
+## Error Handling
+
+### Path Generation
+
+```javascript
+export function generatePhotogrammetryPath(polygonFeature, settings) {
+  try {
+    if (!polygonFeature || !polygonFeature.geometry) {
+      console.error('Path generation failed: Invalid polygon feature');
+      return [];
+    }
+    // ... generation logic
+  } catch (error) {
+    console.error('Path generation failed:', error);
+    return [];
+  }
+}
+```
+
+### Import/Export
+
+- `kmlImporter.js` preserves error context with `{ cause: e }`
+- `geospatial.js` validates NaN/Infinity in calculations
+
+---
+
+## Technical Debt Summary
+
+See [CODE_QUALITY.md](./CODE_QUALITY.md) for detailed analysis.
+
+### Remaining Issues
+
+| Issue | Severity | Location |
+|-------|----------|----------|
+| MapContainer size (1,011 lines) | HIGH | Map/MapContainer.jsx |
+| Direct `getState()` calls | MEDIUM | Multiple files |
+| `window.dispatchEvent` usage | LOW | SidebarMain.jsx:98 |
+| Unused exports | LOW | MissionMetrics.jsx |
+
+### Resolved Issues
+
+| Issue | Resolution |
+|-------|------------|
+| `window.mapboxDraw` global | Replaced with MapboxDrawContext |
+| Magic numbers scattered | Centralized in constants.js |
+| Debug console.log statements | Removed (only error handling remains) |
+| Code duplication | Extracted to geospatial.js utilities |
+| Missing error handling | Added try-catch and validation |
+
+---
+
+## Future Improvements
+
+1. **Extract useWaypointDragDrop hook** from MapContainer
+2. **Split MapContainer** into MapCore, WaypointLayer, DrawingManager
+3. **Replace window.dispatchEvent** with context-based polygon restoration
+4. **Refactor getState() calls** to use hook subscriptions

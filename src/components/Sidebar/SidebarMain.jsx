@@ -733,48 +733,55 @@ export default function SidebarMain({ currentPolygon, setCurrentPolygon }) {
           <Play size={18} /> Generate Path
         </button>
 
-        <div className="flex flex-col gap-2">
-          <div className="bg-white border rounded p-2 text-center">
-            <div className="text-xs text-gray-400 font-bold uppercase">Waypoints</div>
-            <div className="font-bold text-gray-700">{waypoints.length}</div>
-          </div>
-          <div className="bg-white border rounded p-2 text-center">
-            <div className="text-xs text-gray-400 font-bold uppercase">Distance</div>
-            <div className="font-bold text-gray-700">
-              {waypoints.length >= 2
-                ? formatDistance(calculateMissionDistance(waypoints), settings.units)
-                : settings.units === 'metric' ? '0 m' : '0 ft'
-              }
+        {/* Mission Stats Grid */}
+        <div className={`bg-white border rounded-lg overflow-hidden ${
+          warningLevel === 'critical' ? 'border-red-400' :
+          warningLevel === 'warning' ? 'border-yellow-400' : 'border-gray-200'
+        }`}>
+          <div className="grid grid-cols-2 divide-x divide-gray-200">
+            {/* Top Row */}
+            <div className="px-3 py-2 border-b border-gray-200">
+              <div className="text-[10px] text-gray-400 uppercase tracking-wide">Waypoints</div>
+              <div className="text-sm font-semibold text-gray-800">{waypoints.length}</div>
             </div>
-          </div>
-          <div className="bg-white border rounded p-2 text-center">
-            <div className="text-xs text-gray-400 font-bold uppercase">Max Speed</div>
-            <div className="font-bold text-gray-700" title={`Based on ${Math.round(calculatedOverlapDistance)}m forward travel`}>
-              {waypoints.length >= 2 && calculatedMaxSpeed > 0
-                ? `${toDisplay(calculatedMaxSpeed, settings.units).toFixed(1)} ${settings.units === 'metric' ? 'm/s' : 'ft/s'}`
-                : settings.units === 'metric' ? '0 m/s' : '0 ft/s'
-              }
+            <div className="px-3 py-2 border-b border-gray-200">
+              <div className="text-[10px] text-gray-400 uppercase tracking-wide">Distance</div>
+              <div className="text-sm font-semibold text-gray-800">
+                {waypoints.length >= 2
+                  ? formatDistance(calculateMissionDistance(waypoints), settings.units)
+                  : settings.units === 'metric' ? '0 m' : '0 ft'
+                }
+              </div>
             </div>
-          </div>
-          <div className={`bg-white border rounded p-2 text-center ${
-            warningLevel === 'critical' ? 'border-red-500 bg-red-50' :
-            warningLevel === 'warning' ? 'border-yellow-500 bg-yellow-50' : ''
-          }`}>
-            <div className="text-xs text-gray-400 font-bold uppercase">Est. Time</div>
-            <div className={`font-bold ${
-              warningLevel === 'critical' ? 'text-red-600' :
-              warningLevel === 'warning' ? 'text-yellow-700' : 'text-gray-700'
+            {/* Bottom Row */}
+            <div className="px-3 py-2">
+              <div className="text-[10px] text-gray-400 uppercase tracking-wide">Max Speed</div>
+              <div className="text-sm font-semibold text-gray-800" title={`Based on ${Math.round(calculatedOverlapDistance)}m forward travel`}>
+                {waypoints.length >= 2 && calculatedMaxSpeed > 0
+                  ? `${toDisplay(calculatedMaxSpeed, settings.units).toFixed(1)} ${settings.units === 'metric' ? 'm/s' : 'ft/s'}`
+                  : settings.units === 'metric' ? '0 m/s' : '0 ft/s'
+                }
+              </div>
+            </div>
+            <div className={`px-3 py-2 ${
+              warningLevel === 'critical' ? 'bg-red-50' :
+              warningLevel === 'warning' ? 'bg-yellow-50' : ''
             }`}>
-              {waypoints.length >= 2 && calculatedMaxSpeed > 0
-                ? (() => {
-                  const missionTime = useMissionStore.getState().getMissionTime();
-                  const timeStr = formatTime(missionTime);
-                  const icon = warningLevel === 'critical' ? ' 🔴' : warningLevel === 'warning' ? ' ⚠️' : '';
-
-                  return <span title={`${missionTime}s total`}>{timeStr}{icon}</span>;
-                })()
-                : '0:00'
-              }
+              <div className="text-[10px] text-gray-400 uppercase tracking-wide">Est. Mission Time</div>
+              <div className={`text-sm font-semibold ${
+                warningLevel === 'critical' ? 'text-red-600' :
+                warningLevel === 'warning' ? 'text-yellow-600' : 'text-gray-800'
+              }`}>
+                {waypoints.length >= 2 && calculatedMaxSpeed > 0
+                  ? (() => {
+                    const missionTime = useMissionStore.getState().getMissionTime();
+                    const timeStr = formatTime(missionTime);
+                    const icon = warningLevel === 'critical' ? ' ●' : warningLevel === 'warning' ? ' !' : '';
+                    return <span title={`${missionTime}s total`}>{timeStr}{icon}</span>;
+                  })()
+                  : '0:00'
+                }
+              </div>
             </div>
           </div>
         </div>

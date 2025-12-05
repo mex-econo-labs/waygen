@@ -8,6 +8,7 @@
 ## 🌐 Live Demo
 
 **[Launch Waygen →](https://waygen.mex-econo.com/)**
+**[Launch Waygen Dev→](https://dev.waygen-prd.pages.dev/)**
 
 ---
 

@@ -25,6 +25,8 @@
     ├── index.css
     ├── contexts/
     │   └── MapboxDrawContext.jsx
+    ├── hooks/
+    │   └── useMissionGeneration.js
     ├── store/
     │   └── useMissionStore.js
     ├── components/

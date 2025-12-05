@@ -1,19 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useMissionStore } from '../../store/useMissionStore';
-import { generatePhotogrammetryPath } from '../../logic/pathGenerator';
 import { downloadKMZ } from '../../utils/djiExporter';
 import { parseImport } from '../../utils/kmlImporter';
-import { Trash2, Undo, Redo, Download, Play, Upload, ChevronDown, ChevronUp, Settings, Camera, Map as MapIcon, Layers } from 'lucide-react';
+import { Trash2, Undo, Redo, Download, Play, Upload, ChevronDown, ChevronUp, Settings, Camera, Map as MapIcon } from 'lucide-react';
 import { useMapboxDraw } from '../../contexts/MapboxDrawContext';
 import DownloadDialog from '../Dialogs/DownloadDialog';
 import FlightWarningDialog from '../Dialogs/FlightWarningDialog';
-import { getDronePreset, getDroneIds, DRONE_PRESETS, mapLegacyDroneId } from '../../utils/dronePresets';
+import { getDronePreset, getDroneIds, DRONE_PRESETS, mapLegacyDroneId, DEFAULT_PHOTO_INTERVAL } from '../../utils/dronePresets';
 import { toDisplay, toMetric } from '../../utils/units';
 import { DEFAULT_HFOV } from '../../utils/constants';
-import { calculateMaxSpeed } from '../../utils/geospatial';
 import EditSelectedPanel from './EditSelectedPanel';
 import MissionMetrics, { formatTime } from './MissionMetrics';
 import { generateUUID } from '../../utils/uuid';
+import { useMissionGeneration } from '../../hooks/useMissionGeneration';
 
 const Section = ({ title, icon: Icon, children, defaultOpen = false }) => {
   const [isOpen, setIsOpen] = useState(defaultOpen);
@@ -46,125 +45,22 @@ export default function SidebarMain({ currentPolygon, setCurrentPolygon }) {
     calculatedMaxSpeed, minSegmentDistance, calculatedOverlapDistance
   } = useMissionStore();
 
+  // Mission generation hook
+  const {
+    handleGenerateWithWarning,
+    handleAutoGenerate,
+    showFlightWarning,
+    setShowFlightWarning,
+    warningLevel
+  } = useMissionGeneration({ currentPolygon, setCurrentPolygon, mapboxDraw });
+
   // Dialog state for KMZ download
   const [showDownloadDialog, setShowDownloadDialog] = useState(false);
-
-  // Flight warning dialog state
-  const [showFlightWarning, setShowFlightWarning] = useState(false);
-  const [pendingWarningCheck, setPendingWarningCheck] = useState(false);
-
-  // Get the current warning level from the store
-  const warningLevel = waypoints.length >= 2 && calculatedMaxSpeed > 0
-    ? useMissionStore.getState().getFlightWarningLevel()
-    : 'safe';
-
-  // Show warning dialog only when explicitly triggered after Generate Path
-  useEffect(() => {
-    if (pendingWarningCheck && warningLevel !== 'safe') {
-      setShowFlightWarning(true);
-      setPendingWarningCheck(false);
-    } else if (pendingWarningCheck && warningLevel === 'safe') {
-      setPendingWarningCheck(false);
-    }
-  }, [pendingWarningCheck, warningLevel]);
 
   const handleReset = () => {
     if (confirm("Are you sure you want to reset the mission? This will clear all waypoints and shapes.")) {
       resetMission();
       setCurrentPolygon(null); // Clear the polygon on map
-    }
-  };
-
-  const handleGenerate = () => {
-    // Force exit edit mode to confirm changes and update UI
-    if (mapboxDraw) {
-      // Switch to simple_select to exit any edit mode
-      mapboxDraw.changeMode('simple_select');
-    }
-
-    // Get the latest polygon data directly from Draw to ensure we have the most up-to-date version
-    // This handles cases where React state might be slightly behind or if the edit wasn't fully committed
-    let polygonToUse = currentPolygon;
-    if (mapboxDraw) {
-      const selected = mapboxDraw.getSelected();
-      if (selected.features.length > 0) {
-        polygonToUse = selected.features[0];
-        // Ensure we update the state too if it was stale
-        if (setCurrentPolygon) {
-          setCurrentPolygon(polygonToUse);
-        }
-      } else if (currentPolygon && currentPolygon.id) {
-        // If nothing selected but we have a current polygon, try to get it from draw
-        const feature = mapboxDraw.get(currentPolygon.id);
-        if (feature) {
-          polygonToUse = feature;
-          // Ensure we update the state too if it was stale
-          if (setCurrentPolygon) {
-            setCurrentPolygon(polygonToUse);
-          }
-        }
-      }
-    }
-
-    if (!polygonToUse) return alert("Draw a shape first!");
-
-    // Get fresh settings from store to ensure we have the latest values, 
-    // especially when called immediately after updateSettings
-    const currentSettings = useMissionStore.getState().settings;
-
-    // Resolve effective settings for generation
-    const dronePreset = getDronePreset(currentSettings.selectedDrone);
-    const effectiveFOV = dronePreset?.hfov ?? currentSettings.customFOV;
-    const generationSettings = {
-      ...currentSettings,
-      customFOV: effectiveFOV
-    };
-
-    // Step 1: Generate initial path to get waypoint geometry
-    const initialPath = generatePhotogrammetryPath(polygonToUse, generationSettings);
-
-    // Step 2: Calculate max safe speed based on photo interval
-    const photoInterval = currentSettings.photoInterval;
-    const { maxSpeed } = calculateMaxSpeed(
-      initialPath, 
-      photoInterval,
-      currentSettings.altitude,
-      effectiveFOV,
-      currentSettings.gimbalPitch,
-      currentSettings.frontOverlap
-    );
-
-    // Step 3: Regenerate path with calculated speed
-    const finalSettings = {
-      ...generationSettings,
-      speed: maxSpeed > 0 ? maxSpeed : currentSettings.speed
-    };
-    const finalPath = generatePhotogrammetryPath(polygonToUse, finalSettings);
-
-    // Step 4: Set waypoints and update metrics
-    setWaypoints(finalPath);
-
-    // Update metrics in store
-    setTimeout(() => {
-      useMissionStore.getState().calculateMissionMetrics();
-    }, 50);
-  };
-
-  // Wrapper for explicit Generate Path button - triggers warning check
-  const handleGenerateWithWarning = () => {
-    handleGenerate();
-    // Schedule warning check after metrics are calculated
-    setTimeout(() => {
-      setPendingWarningCheck(true);
-    }, 100);
-  };
-
-  const handleAutoGenerate = () => {
-    // Only auto-generate if we already have waypoints (meaning a path was generated before)
-    // and we have a valid polygon
-    const currentWaypoints = useMissionStore.getState().waypoints;
-    if (currentWaypoints.length > 0 && currentPolygon) {
-      handleGenerate();
     }
   };
 

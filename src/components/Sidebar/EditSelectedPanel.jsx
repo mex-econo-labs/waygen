@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Settings, Trash2, Save, Plus } from 'lucide-react';
-import * as turf from '@turf/turf';
 import { toDisplay, toMetric } from '../../utils/units';
+import { getMidpoint } from '../../utils/geospatial';
 
 export default function EditSelectedPanel({
     selectedWaypoints,
@@ -30,9 +30,7 @@ export default function EditSelectedPanel({
         const firstWp = waypoints[firstIdx];
         const secondWp = waypoints[indices[1]];
 
-        const p1 = turf.point([firstWp.lng, firstWp.lat]);
-        const p2 = turf.point([secondWp.lng, secondWp.lat]);
-        const mid = turf.midpoint(p1, p2);
+        const mid = getMidpoint(firstWp, secondWp);
         const [midLng, midLat] = mid.geometry.coordinates;
 
         const newWp = {

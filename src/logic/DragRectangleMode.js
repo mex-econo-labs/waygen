@@ -1,3 +1,5 @@
+import { getRectangleBounds } from '../utils/geospatial';
+
 // Custom mode for drawing a rectangle by dragging
 const DragRectangleMode = {
     onSetup: function (opts) {
@@ -77,21 +79,9 @@ const DragRectangleMode = {
         const start = state.startPoint;
         const end = [e.lngLat.lng, e.lngLat.lat];
 
-        const minX = Math.min(start[0], end[0]);
-        const maxX = Math.max(start[0], end[0]);
-        const minY = Math.min(start[1], end[1]);
-        const maxY = Math.max(start[1], end[1]);
+        const { minX, maxX, minY, maxY } = getRectangleBounds(start, end);
 
-        // Enforce standard winding (Counter-Clockwise for exterior rings in GeoJSON is recommended, 
-        // but Mapbox Draw often uses CW. Let's stick to a consistent order: TL -> TR -> BR -> BL -> TL)
-        // Actually, standard GeoJSON is CCW. 
-        // Let's use:
-        // 1. Top-Left (minX, maxY)
-        // 2. Top-Right (maxX, maxY)
-        // 3. Bottom-Right (maxX, minY)
-        // 4. Bottom-Left (minX, minY)
-        // 5. Close (minX, maxY)
-
+        // Enforce standard winding: TL -> TR -> BR -> BL -> TL (CCW)
         const coordinates = [
             [minX, maxY], // Top Left
             [maxX, maxY], // Top Right

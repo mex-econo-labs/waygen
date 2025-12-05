@@ -4,7 +4,7 @@ import { generatePhotogrammetryPath } from '../../logic/pathGenerator';
 import { downloadKMZ } from '../../utils/djiExporter';
 import { parseImport } from '../../utils/kmlImporter';
 import { Trash2, Undo, Redo, Download, Play, Upload, ChevronDown, ChevronUp, Settings, Camera, Map as MapIcon, Layers } from 'lucide-react';
-import * as turf from '@turf/turf';
+import { calculateDistance } from '../../utils/geospatial';
 import DownloadDialog from '../Dialogs/DownloadDialog';
 import FlightWarningDialog from '../Dialogs/FlightWarningDialog';
 import { getDronePreset, getDroneIds, DRONE_PRESETS, mapLegacyDroneId } from '../../utils/dronePresets';
@@ -295,9 +295,7 @@ export default function SidebarMain({ currentPolygon, setCurrentPolygon }) {
 
     let totalDistance = 0;
     for (let i = 0; i < waypoints.length - 1; i++) {
-      const from = turf.point([waypoints[i].lng, waypoints[i].lat]);
-      const to = turf.point([waypoints[i + 1].lng, waypoints[i + 1].lat]);
-      totalDistance += turf.distance(from, to, { units: 'meters' });
+      totalDistance += calculateDistance(waypoints[i], waypoints[i + 1]);
     }
 
     return totalDistance;

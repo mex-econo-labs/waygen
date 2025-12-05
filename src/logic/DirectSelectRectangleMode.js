@@ -1,4 +1,5 @@
 import { DirectMode } from 'mapbox-gl-draw-circle';
+import { getRectangleBounds } from '../utils/geospatial';
 
 const DirectSelectRectangleMode = {
     ...DirectMode,
@@ -81,18 +82,9 @@ const DirectSelectRectangleMode = {
                 if (!oppositePoint) return;
 
                 // Calculate new bounding box from Opposite Point (Fixed) and Mouse (Moving)
-                const minX = Math.min(lng, oppositePoint[0]);
-                const maxX = Math.max(lng, oppositePoint[0]);
-                const minY = Math.min(lat, oppositePoint[1]);
-                const maxY = Math.max(lat, oppositePoint[1]);
+                const { minX, maxX, minY, maxY } = getRectangleBounds([lng, lat], oppositePoint);
 
-                // Reconstruct rectangle with standard winding
-                // TL, TR, BR, BL, TL
-                // TL = [minX, maxY]
-                // TR = [maxX, maxY]
-                // BR = [maxX, minY]
-                // BL = [minX, minY]
-
+                // Reconstruct rectangle with standard winding: TL, TR, BR, BL, TL
                 const newCoords = [
                     [minX, maxY], // TL
                     [maxX, maxY], // TR

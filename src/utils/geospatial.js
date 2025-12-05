@@ -128,6 +128,45 @@ export const calculateDistance = (wp1, wp2) => {
 };
 
 /**
+ * Get the midpoint between two waypoints
+ * @param {Object} wp1 - First waypoint { lng, lat }
+ * @param {Object} wp2 - Second waypoint { lng, lat }
+ * @returns {Object} Turf.js point feature at midpoint
+ */
+export const getMidpoint = (wp1, wp2) => {
+    const p1 = turf.point([wp1.lng, wp1.lat]);
+    const p2 = turf.point([wp2.lng, wp2.lat]);
+    return turf.midpoint(p1, p2);
+};
+
+/**
+ * Get the bearing between two waypoints
+ * @param {Object} wp1 - First waypoint { lng, lat }
+ * @param {Object} wp2 - Second waypoint { lng, lat }
+ * @returns {number} Bearing in degrees (0-360)
+ */
+export const getBearing = (wp1, wp2) => {
+    const p1 = turf.point([wp1.lng, wp1.lat]);
+    const p2 = turf.point([wp2.lng, wp2.lat]);
+    return turf.bearing(p1, p2);
+};
+
+/**
+ * Calculate rectangle bounds from two corner points
+ * @param {Array} point1 - First corner [lng, lat]
+ * @param {Array} point2 - Second corner [lng, lat]
+ * @returns {Object} { minX, maxX, minY, maxY }
+ */
+export const getRectangleBounds = (point1, point2) => {
+    return {
+        minX: Math.min(point1[0], point2[0]),
+        maxX: Math.max(point1[0], point2[0]),
+        minY: Math.min(point1[1], point2[1]),
+        maxY: Math.max(point1[1], point2[1])
+    };
+};
+
+/**
  * Calculate maximum safe speed based on forward overlap travel and photo interval.
  * Ensures drone doesn't arrive at next photo point before camera is ready.
  * @param {Array} waypoints - Array of waypoint objects with lng, lat (used for minDistance only)

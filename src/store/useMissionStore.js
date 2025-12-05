@@ -1,9 +1,8 @@
 import { create } from 'zustand';
-import { bearing } from '@turf/turf';
 
 import { getDronePreset, DRONE_PRESETS, DEFAULT_PHOTO_INTERVAL, mapLegacyDroneId, getDefaultDroneId } from '../utils/dronePresets';
 import { DEFAULT_HFOV } from '../utils/constants';
-import { calculateMaxSpeed, calculateMissionTime, getFlightWarningLevel, calculateDistance } from '../utils/geospatial';
+import { calculateMaxSpeed, calculateMissionTime, getFlightWarningLevel, calculateDistance, getBearing } from '../utils/geospatial';
 import { generateUUID } from '../utils/uuid';
 
 export const useMissionStore = create((set, get) => ({
@@ -91,10 +90,7 @@ export const useMissionStore = create((set, get) => ({
       const lastIndex = updatedWaypoints.length - 1;
       const lastWp = updatedWaypoints[lastIndex];
       // Calculate bearing from last waypoint to new waypoint
-      const newHeading = Math.round(bearing(
-        [lastWp.lng, lastWp.lat],
-        [newWp.lng, newWp.lat]
-      ));
+      const newHeading = Math.round(getBearing(lastWp, newWp));
       updatedWaypoints[lastIndex] = { ...lastWp, heading: newHeading };
       newWp.heading = newHeading;
     }

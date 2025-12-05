@@ -33,7 +33,8 @@
     │   │   └── DrawToolbar.jsx
     │   ├── Sidebar/
     │   │   ├── SidebarMain.jsx
-    │   │   └── EditSelectedPanel.jsx
+    │   │   ├── EditSelectedPanel.jsx
+    │   │   └── MissionMetrics.jsx
     │   ├── Dialogs/
     │   │   ├── DownloadDialog.jsx
     │   │   └── FlightWarningDialog.jsx

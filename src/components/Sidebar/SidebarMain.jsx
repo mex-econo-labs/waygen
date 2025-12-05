@@ -4,15 +4,15 @@ import { generatePhotogrammetryPath } from '../../logic/pathGenerator';
 import { downloadKMZ } from '../../utils/djiExporter';
 import { parseImport } from '../../utils/kmlImporter';
 import { Trash2, Undo, Redo, Download, Play, Upload, ChevronDown, ChevronUp, Settings, Camera, Map as MapIcon, Layers } from 'lucide-react';
-import { calculateDistance } from '../../utils/geospatial';
 import { useMapboxDraw } from '../../contexts/MapboxDrawContext';
 import DownloadDialog from '../Dialogs/DownloadDialog';
 import FlightWarningDialog from '../Dialogs/FlightWarningDialog';
 import { getDronePreset, getDroneIds, DRONE_PRESETS, mapLegacyDroneId } from '../../utils/dronePresets';
-import { toDisplay, toMetric, METERS_TO_FEET } from '../../utils/units';
+import { toDisplay, toMetric } from '../../utils/units';
 import { DEFAULT_HFOV } from '../../utils/constants';
 import { calculateMaxSpeed } from '../../utils/geospatial';
 import EditSelectedPanel from './EditSelectedPanel';
+import MissionMetrics, { formatTime } from './MissionMetrics';
 import { generateUUID } from '../../utils/uuid';
 
 const Section = ({ title, icon: Icon, children, defaultOpen = false }) => {
@@ -291,44 +291,6 @@ export default function SidebarMain({ currentPolygon, setCurrentPolygon }) {
     downloadKMZ(waypoints, exportSettings, filename, sessionData);
   };
 
-  // Mission statistics calculations
-  const calculateMissionDistance = (waypoints) => {
-    if (waypoints.length < 2) return 0;
-
-    let totalDistance = 0;
-    for (let i = 0; i < waypoints.length - 1; i++) {
-      totalDistance += calculateDistance(waypoints[i], waypoints[i + 1]);
-    }
-
-    return totalDistance;
-  };
-
-  const calculateMissionTime = (waypoints, speed) => {
-    if (speed === 0) return 0;
-    const distance = calculateMissionDistance(waypoints);
-    return Math.round(distance / speed);
-  };
-
-  const formatTime = (seconds) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  const formatDistance = (meters, units) => {
-    if (units === 'metric') {
-      if (meters >= 1000) {
-        return `${(meters / 1000).toFixed(2)} km`;
-      }
-      return `${Math.round(meters)} m`;
-    } else {
-      const feet = meters * METERS_TO_FEET;
-      if (feet >= 5280) {
-        return `${(feet / 5280).toFixed(2)} mi`;
-      }
-      return `${Math.round(feet)} ft`;
-    }
-  };
 
   // Bulk Edit Mode
   if (selectedIds.length > 0) {
@@ -732,58 +694,13 @@ export default function SidebarMain({ currentPolygon, setCurrentPolygon }) {
           <Play size={18} /> Generate Path
         </button>
 
-        {/* Mission Stats Grid */}
-        <div className={`bg-white border rounded-lg overflow-hidden ${
-          warningLevel === 'critical' ? 'border-red-400' :
-          warningLevel === 'warning' ? 'border-yellow-400' : 'border-gray-200'
-        }`}>
-          <div className="grid grid-cols-2 divide-x divide-gray-200">
-            {/* Top Row */}
-            <div className="px-3 py-2 border-b border-gray-200">
-              <div className="text-[10px] text-gray-400 uppercase tracking-wide">Waypoints</div>
-              <div className="text-sm font-semibold text-gray-800">{waypoints.length}</div>
-            </div>
-            <div className="px-3 py-2 border-b border-gray-200">
-              <div className="text-[10px] text-gray-400 uppercase tracking-wide">Distance</div>
-              <div className="text-sm font-semibold text-gray-800">
-                {waypoints.length >= 2
-                  ? formatDistance(calculateMissionDistance(waypoints), settings.units)
-                  : settings.units === 'metric' ? '0 m' : '0 ft'
-                }
-              </div>
-            </div>
-            {/* Bottom Row */}
-            <div className="px-3 py-2">
-              <div className="text-[10px] text-gray-400 uppercase tracking-wide">Max Speed</div>
-              <div className="text-sm font-semibold text-gray-800" title={`Based on ${Math.round(calculatedOverlapDistance)}m forward travel`}>
-                {waypoints.length >= 2 && calculatedMaxSpeed > 0
-                  ? `${toDisplay(calculatedMaxSpeed, settings.units).toFixed(1)} ${settings.units === 'metric' ? 'm/s' : 'ft/s'}`
-                  : settings.units === 'metric' ? '0 m/s' : '0 ft/s'
-                }
-              </div>
-            </div>
-            <div className={`px-3 py-2 ${
-              warningLevel === 'critical' ? 'bg-red-50' :
-              warningLevel === 'warning' ? 'bg-yellow-50' : ''
-            }`}>
-              <div className="text-[10px] text-gray-400 uppercase tracking-wide">Est. Mission Time</div>
-              <div className={`text-sm font-semibold ${
-                warningLevel === 'critical' ? 'text-red-600' :
-                warningLevel === 'warning' ? 'text-yellow-600' : 'text-gray-800'
-              }`}>
-                {waypoints.length >= 2 && calculatedMaxSpeed > 0
-                  ? (() => {
-                    const missionTime = useMissionStore.getState().getMissionTime();
-                    const timeStr = formatTime(missionTime);
-                    const icon = warningLevel === 'critical' ? ' ●' : warningLevel === 'warning' ? ' !' : '';
-                    return <span title={`${missionTime}s total`}>{timeStr}{icon}</span>;
-                  })()
-                  : '0:00'
-                }
-              </div>
-            </div>
-          </div>
-        </div>
+        <MissionMetrics
+          waypoints={waypoints}
+          settings={settings}
+          warningLevel={warningLevel}
+          calculatedMaxSpeed={calculatedMaxSpeed}
+          calculatedOverlapDistance={calculatedOverlapDistance}
+        />
 
         <button onClick={handleDownloadClick} disabled={waypoints.length === 0} className="w-full mt-3 bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold p-3 rounded-lg shadow-md flex items-center justify-center gap-2 transition-all">
           <Download size={18} /> Download KMZ Mission

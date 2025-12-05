@@ -19,10 +19,7 @@ export default function DrawToolbar({ currentMode, onModeChange, onDelete, canDe
         return (
           <button
             key={tool.id}
-            onClick={() => {
-              console.log('Switching to mode:', tool.id);
-              onModeChange(tool.id);
-            }}
+            onClick={() => onModeChange(tool.id)}
             className={`p-2 rounded hover:bg-gray-100 flex items-center justify-center ${isActive ? 'text-blue-600 bg-blue-50' : 'text-gray-700'
               }`}
             title={tool.title}

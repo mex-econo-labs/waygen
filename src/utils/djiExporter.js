@@ -1,5 +1,6 @@
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
+import { DJI_DRONE_ENUM, DJI_DRONE_SUB_ENUM } from './constants';
 
 export const downloadKMZ = async (waypoints, settings, filename = "MiniMission", sessionData = null) => {
   const zip = new JSZip();
@@ -27,8 +28,8 @@ export const downloadKMZ = async (waypoints, settings, filename = "MiniMission",
       <wpml:executeRCLostAction>${rcLostAction || 'hover'}</wpml:executeRCLostAction>
       <wpml:globalTransitionalSpeed>${globalTransitionalSpeed !== undefined ? globalTransitionalSpeed : speed}</wpml:globalTransitionalSpeed>
       <wpml:droneInfo>
-        <wpml:droneEnumValue>68</wpml:droneEnumValue>
-        <wpml:droneSubEnumValue>0</wpml:droneSubEnumValue>
+        <wpml:droneEnumValue>${DJI_DRONE_ENUM}</wpml:droneEnumValue>
+        <wpml:droneSubEnumValue>${DJI_DRONE_SUB_ENUM}</wpml:droneSubEnumValue>
       </wpml:droneInfo>
     </wpml:missionConfig>
     <wpml:templateId>0</wpml:templateId>
@@ -191,8 +192,8 @@ export const downloadKMZ = async (waypoints, settings, filename = "MiniMission",
       <wpml:executeRCLostAction>${rcLostAction || 'hover'}</wpml:executeRCLostAction>
       <wpml:globalTransitionalSpeed>${globalTransitionalSpeed !== undefined ? globalTransitionalSpeed : speed}</wpml:globalTransitionalSpeed>
       <wpml:droneInfo>
-        <wpml:droneEnumValue>68</wpml:droneEnumValue>
-        <wpml:droneSubEnumValue>0</wpml:droneSubEnumValue>
+        <wpml:droneEnumValue>${DJI_DRONE_ENUM}</wpml:droneEnumValue>
+        <wpml:droneSubEnumValue>${DJI_DRONE_SUB_ENUM}</wpml:droneSubEnumValue>
       </wpml:droneInfo>
     </wpml:missionConfig>
     <Folder>

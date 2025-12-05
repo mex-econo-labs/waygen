@@ -512,8 +512,6 @@ export default function MapContainer({ onPolygonDrawn, polygon }) {
     // Removed legacy restore-polygon listener in favor of prop-based sync
 
     const initializeLayers = () => {
-      console.log("Initializing Map Layers...");
-
       // Load Images
       const loadIcon = (name, url) => {
         if (map.current.hasImage(name)) return;
@@ -653,7 +651,6 @@ export default function MapContainer({ onPolygonDrawn, polygon }) {
       const currentSelectedIds = useMissionStore.getState().selectedIds;
 
       if (currentWaypoints.length > 0) {
-        console.log("Initial waypoints found, updating source...", currentWaypoints.length);
         const features = currentWaypoints.map((wp, index) => ({
           type: 'Feature',
           properties: {
@@ -905,7 +902,6 @@ export default function MapContainer({ onPolygonDrawn, polygon }) {
     const alreadyExists = currentFeatures.some(f => f.id === polygon.id);
 
     if (!alreadyExists) {
-      console.log("Syncing polygon from prop:", polygon);
       draw.current.deleteAll();
       draw.current.add(polygon);
 

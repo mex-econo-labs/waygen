@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { bearing } from '@turf/turf';
 
 import { getDronePreset, DRONE_PRESETS, DEFAULT_PHOTO_INTERVAL, mapLegacyDroneId, getDefaultDroneId } from '../utils/dronePresets';
+import { DEFAULT_HFOV } from '../utils/constants';
 import { calculateMaxSpeed, calculateMissionTime, getFlightWarningLevel, calculateDistance } from '../utils/geospatial';
 import { generateUUID } from '../utils/uuid';
 
@@ -34,7 +35,7 @@ export const useMissionStore = create((set, get) => ({
       altitude: 60,
       speed: 10,
       gimbalPitch: -90,
-      customFOV: defaultPreset?.hfov || 82.1,
+      customFOV: defaultPreset?.hfov || DEFAULT_HFOV,
       showFootprints: false,
       footprintColor: '#22c55e',
       sideOverlap: 80,

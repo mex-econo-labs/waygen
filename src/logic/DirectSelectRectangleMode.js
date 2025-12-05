@@ -1,5 +1,4 @@
 import { DirectMode } from 'mapbox-gl-draw-circle';
-import * as turf from '@turf/turf';
 
 const DirectSelectRectangleMode = {
     ...DirectMode,

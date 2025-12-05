@@ -1,5 +1,6 @@
 import { kml } from '@tmcw/togeojson';
 import JSZip from 'jszip';
+import { COORD_EPSILON } from './constants';
 
 export const parseImport = async (file) => {
   // 1. Handle raw KML files (text)
@@ -75,7 +76,7 @@ export const parseImport = async (file) => {
                 const pLat = Number(coords[1]);
 
                 // Use a slightly larger epsilon for float comparison
-                return Math.abs(pLng - fLng) < 0.0001 && Math.abs(pLat - fLat) < 0.0001;
+                return Math.abs(pLng - fLng) < COORD_EPSILON && Math.abs(pLat - fLat) < COORD_EPSILON;
               });
             }
 

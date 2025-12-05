@@ -1,5 +1,6 @@
 import * as turf from '@turf/turf';
 import { FLIGHT_WARNING_THRESHOLD, TAKEOFF_LANDING_OVERHEAD } from './dronePresets';
+import { ASPECT_RATIO_4_3 } from './constants';
 
 
 /**
@@ -16,7 +17,7 @@ export const calculateFootprint = (center, altitude, heading, hfov, gimbalPitch 
 
     // 1. Convert Inputs
     const pitchRad = (gimbalPitch * Math.PI) / 180;
-    const aspectRatio = 4 / 3; // Standard Photo Aspect Ratio
+    const aspectRatio = ASPECT_RATIO_4_3; // Standard Photo Aspect Ratio
     const hfovRad = (hfov * Math.PI) / 180;
     // Calculate VFOV from HFOV and Aspect Ratio
     const vfovRad = 2 * Math.atan(Math.tan(hfovRad / 2) / aspectRatio);
@@ -101,7 +102,7 @@ export const calculateFootprint = (center, altitude, heading, hfov, gimbalPitch 
  */
 export const calculateVerticalFootprintDimension = (altitude, hfov, gimbalPitch) => {
     // Standard Photo Aspect Ratio (e.g., 4:3 for many drones)
-    const aspectRatio = 4 / 3; 
+    const aspectRatio = ASPECT_RATIO_4_3; 
 
     // Convert HFOV to VFOV
     const hfovRad = (hfov * Math.PI) / 180;

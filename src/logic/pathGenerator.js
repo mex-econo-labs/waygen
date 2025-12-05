@@ -1,5 +1,6 @@
 import * as turf from '@turf/turf';
 import { generateUUID } from '../utils/uuid.js';
+import { DEFAULT_HFOV, METERS_PER_DEGREE_LAT } from '../utils/constants.js';
 
 // ... (existing imports)
 
@@ -96,7 +97,7 @@ export function generatePhotogrammetryPath(polygonFeature, settings) {
   // ... (rest of existing grid logic)
   // 1. Calculate Line Spacing in METERS
   // Use customFOV from settings (defaulting to 82.1 if missing)
-  const hfov = settings.customFOV || 82.1;
+  const hfov = settings.customFOV || DEFAULT_HFOV;
   const FOV_CONSTANT = Math.tan((hfov / 2) * (Math.PI / 180));
 
   const imageWidth = (altitude * FOV_CONSTANT) * 2;
@@ -107,7 +108,7 @@ export function generatePhotogrammetryPath(polygonFeature, settings) {
   const frontSpacingMeters = groundHeight * (1 - (frontOverlap / 100));
 
   // 2. Convert Spacing to DEGREES (Lat/Lng approximation)
-  const lineSpacingDegrees = lineSpacingMeters / 111111;
+  const lineSpacingDegrees = lineSpacingMeters / METERS_PER_DEGREE_LAT;
 
   // 3. Define a fixed pivot point for rotation
   const pivot = turf.centroid(polygonFeature);

@@ -8,7 +8,8 @@ import * as turf from '@turf/turf';
 import DownloadDialog from '../Dialogs/DownloadDialog';
 import FlightWarningDialog from '../Dialogs/FlightWarningDialog';
 import { getDronePreset, getDroneIds, DRONE_PRESETS, mapLegacyDroneId } from '../../utils/dronePresets';
-import { toDisplay, toMetric } from '../../utils/units';
+import { toDisplay, toMetric, METERS_TO_FEET } from '../../utils/units';
+import { DEFAULT_HFOV } from '../../utils/constants';
 import { calculateMaxSpeed } from '../../utils/geospatial';
 import EditSelectedPanel from './EditSelectedPanel';
 import { generateUUID } from '../../utils/uuid';
@@ -191,12 +192,10 @@ export default function SidebarMain({ currentPolygon, setCurrentPolygon }) {
 
         // Restore Session Data (Settings + Polygon)
         if (sessionData) {
-          console.log("Restoring session data:", sessionData);
           if (sessionData.settings) {
             updateSettings(sessionData.settings);
           }
           if (sessionData.polygon && setCurrentPolygon) {
-            console.log("Dispatching restore-polygon event", sessionData.polygon);
             setCurrentPolygon(sessionData.polygon);
             window.dispatchEvent(new CustomEvent('waygen:restore-polygon', { detail: sessionData.polygon }));
           } else {
@@ -323,7 +322,7 @@ export default function SidebarMain({ currentPolygon, setCurrentPolygon }) {
       }
       return `${Math.round(meters)} m`;
     } else {
-      const feet = meters * 3.28084;
+      const feet = meters * METERS_TO_FEET;
       if (feet >= 5280) {
         return `${(feet / 5280).toFixed(2)} mi`;
       }
@@ -450,7 +449,7 @@ export default function SidebarMain({ currentPolygon, setCurrentPolygon }) {
                   fov = settings.customFOV;
                   newPhotoInterval = settings.photoInterval; // Keep current custom interval
                 } else {
-                  fov = preset?.hfov || 82.1;
+                  fov = preset?.hfov || DEFAULT_HFOV;
                   newPhotoInterval = preset?.photoInterval || DEFAULT_PHOTO_INTERVAL;
                 }
 
@@ -683,7 +682,7 @@ export default function SidebarMain({ currentPolygon, setCurrentPolygon }) {
 
           {settings.showFootprints && (() => {
             // Calculate estimated footprint size
-            const hfov = settings.customFOV || 82.1;
+            const hfov = settings.customFOV || DEFAULT_HFOV;
             const altitude = settings.altitude; // Already in metric if stored that way, or mixed. Store seems to keep metric.
             // Store keeps metric.
             const widthMeters = 2 * altitude * Math.tan((hfov * Math.PI) / 360);

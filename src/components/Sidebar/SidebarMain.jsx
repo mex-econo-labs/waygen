@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useMissionStore } from '../../store/useMissionStore';
 import { generatePhotogrammetryPath } from '../../logic/pathGenerator';
 import { downloadKMZ } from '../../utils/djiExporter';
@@ -48,7 +48,22 @@ export default function SidebarMain({ currentPolygon, setCurrentPolygon }) {
 
   // Flight warning dialog state
   const [showFlightWarning, setShowFlightWarning] = useState(false);
-  const [hasShownWarning, setHasShownWarning] = useState({ warning: false, critical: false });
+  const [pendingWarningCheck, setPendingWarningCheck] = useState(false);
+
+  // Get the current warning level from the store
+  const warningLevel = waypoints.length >= 2 && calculatedMaxSpeed > 0
+    ? useMissionStore.getState().getFlightWarningLevel()
+    : 'safe';
+
+  // Show warning dialog only when explicitly triggered after Generate Path
+  useEffect(() => {
+    if (pendingWarningCheck && warningLevel !== 'safe') {
+      setShowFlightWarning(true);
+      setPendingWarningCheck(false);
+    } else if (pendingWarningCheck && warningLevel === 'safe') {
+      setPendingWarningCheck(false);
+    }
+  }, [pendingWarningCheck, warningLevel]);
 
   const handleReset = () => {
     if (confirm("Are you sure you want to reset the mission? This will clear all waypoints and shapes.")) {
@@ -130,6 +145,15 @@ export default function SidebarMain({ currentPolygon, setCurrentPolygon }) {
     setTimeout(() => {
       useMissionStore.getState().calculateMissionMetrics();
     }, 50);
+  };
+
+  // Wrapper for explicit Generate Path button - triggers warning check
+  const handleGenerateWithWarning = () => {
+    handleGenerate();
+    // Schedule warning check after metrics are calculated
+    setTimeout(() => {
+      setPendingWarningCheck(true);
+    }, 100);
   };
 
   const handleAutoGenerate = () => {
@@ -705,7 +729,7 @@ export default function SidebarMain({ currentPolygon, setCurrentPolygon }) {
 
       {/* Footer */}
       < div className="p-4 border-t bg-gray-50" >
-        <button onClick={handleGenerate} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold p-3 rounded-lg shadow-md mb-3 flex items-center justify-center gap-2 transition-all transform active:scale-95">
+        <button onClick={handleGenerateWithWarning} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold p-3 rounded-lg shadow-md mb-3 flex items-center justify-center gap-2 transition-all transform active:scale-95">
           <Play size={18} /> Generate Path
         </button>
 
@@ -732,35 +756,20 @@ export default function SidebarMain({ currentPolygon, setCurrentPolygon }) {
               }
             </div>
           </div>
-          <div className={`bg-white border rounded p-2 text-center ${(() => {
-            const level = useMissionStore.getState().getFlightWarningLevel();
-            if (level === 'critical') return 'border-red-500 bg-red-50';
-            if (level === 'warning') return 'border-yellow-500 bg-yellow-50';
-            return '';
-          })()
-            }`}>
+          <div className={`bg-white border rounded p-2 text-center ${
+            warningLevel === 'critical' ? 'border-red-500 bg-red-50' :
+            warningLevel === 'warning' ? 'border-yellow-500 bg-yellow-50' : ''
+          }`}>
             <div className="text-xs text-gray-400 font-bold uppercase">Est. Time</div>
-            <div className={`font-bold ${(() => {
-              const level = useMissionStore.getState().getFlightWarningLevel();
-              if (level === 'critical') return 'text-red-600';
-              if (level === 'warning') return 'text-yellow-700';
-              return 'text-gray-700';
-            })()
-              }`}>
+            <div className={`font-bold ${
+              warningLevel === 'critical' ? 'text-red-600' :
+              warningLevel === 'warning' ? 'text-yellow-700' : 'text-gray-700'
+            }`}>
               {waypoints.length >= 2 && calculatedMaxSpeed > 0
                 ? (() => {
                   const missionTime = useMissionStore.getState().getMissionTime();
-                  const level = useMissionStore.getState().getFlightWarningLevel();
                   const timeStr = formatTime(missionTime);
-                  const icon = level === 'critical' ? ' 🔴' : level === 'warning' ? ' ⚠️' : '';
-
-                  // Show warning dialog if first time seeing this level
-                  if (level !== 'safe' && !hasShownWarning[level]) {
-                    setTimeout(() => {
-                      setShowFlightWarning(true);
-                      setHasShownWarning(prev => ({ ...prev, [level]: true }));
-                    }, 500);
-                  }
+                  const icon = warningLevel === 'critical' ? ' 🔴' : warningLevel === 'warning' ? ' ⚠️' : '';
 
                   return <span title={`${missionTime}s total`}>{timeStr}{icon}</span>;
                 })()
@@ -787,10 +796,10 @@ export default function SidebarMain({ currentPolygon, setCurrentPolygon }) {
       />
 
       {/* Flight Warning Dialog */}
-      < FlightWarningDialog
+      <FlightWarningDialog
         isOpen={showFlightWarning}
         onClose={() => setShowFlightWarning(false)}
-        warningLevel={useMissionStore.getState().getFlightWarningLevel()}
+        warningLevel={warningLevel}
         missionTime={waypoints.length >= 2 ? formatTime(useMissionStore.getState().getMissionTime()) : '0:00'}
         droneName={getDronePreset(settings.selectedDrone)?.name || 'Unknown Drone'}
         maxFlightTime={getDronePreset(settings.selectedDrone)?.maxFlightTime || 0}

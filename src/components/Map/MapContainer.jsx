@@ -91,7 +91,7 @@ const simpleStyles = [
   }
 ];
 
-export default function MapContainer({ onPolygonDrawn, polygon }) {
+export default function MapContainer({ onPolygonDrawn, polygon, onDrawReady }) {
   const mapContainer = useRef(null);
   const map = useRef(null);
   const draw = useRef(null);
@@ -219,7 +219,11 @@ export default function MapContainer({ onPolygonDrawn, polygon }) {
       }
     });
     map.current.addControl(draw.current);
-    window.mapboxDraw = draw.current;
+
+    // Expose draw instance via callback instead of global
+    if (onDrawReady) {
+      onDrawReady(draw.current);
+    }
 
     map.current.on('draw.create', (e) => {
       const feature = e.features[0];

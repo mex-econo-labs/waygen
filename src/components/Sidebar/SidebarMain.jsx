@@ -5,6 +5,7 @@ import { downloadKMZ } from '../../utils/djiExporter';
 import { parseImport } from '../../utils/kmlImporter';
 import { Trash2, Undo, Redo, Download, Play, Upload, ChevronDown, ChevronUp, Settings, Camera, Map as MapIcon, Layers } from 'lucide-react';
 import { calculateDistance } from '../../utils/geospatial';
+import { useMapboxDraw } from '../../contexts/MapboxDrawContext';
 import DownloadDialog from '../Dialogs/DownloadDialog';
 import FlightWarningDialog from '../Dialogs/FlightWarningDialog';
 import { getDronePreset, getDroneIds, DRONE_PRESETS, mapLegacyDroneId } from '../../utils/dronePresets';
@@ -36,6 +37,7 @@ const Section = ({ title, icon: Icon, children, defaultOpen = false }) => {
 };
 
 export default function SidebarMain({ currentPolygon, setCurrentPolygon }) {
+  const mapboxDraw = useMapboxDraw();
   const {
     waypoints, selectedIds, settings,
     setWaypoints, updateSelectedWaypoints, deleteSelectedWaypoints, insertWaypoint,
@@ -75,16 +77,16 @@ export default function SidebarMain({ currentPolygon, setCurrentPolygon }) {
 
   const handleGenerate = () => {
     // Force exit edit mode to confirm changes and update UI
-    if (window.mapboxDraw) {
+    if (mapboxDraw) {
       // Switch to simple_select to exit any edit mode
-      window.mapboxDraw.changeMode('simple_select');
+      mapboxDraw.changeMode('simple_select');
     }
 
     // Get the latest polygon data directly from Draw to ensure we have the most up-to-date version
     // This handles cases where React state might be slightly behind or if the edit wasn't fully committed
     let polygonToUse = currentPolygon;
-    if (window.mapboxDraw) {
-      const selected = window.mapboxDraw.getSelected();
+    if (mapboxDraw) {
+      const selected = mapboxDraw.getSelected();
       if (selected.features.length > 0) {
         polygonToUse = selected.features[0];
         // Ensure we update the state too if it was stale
@@ -93,7 +95,7 @@ export default function SidebarMain({ currentPolygon, setCurrentPolygon }) {
         }
       } else if (currentPolygon && currentPolygon.id) {
         // If nothing selected but we have a current polygon, try to get it from draw
-        const feature = window.mapboxDraw.get(currentPolygon.id);
+        const feature = mapboxDraw.get(currentPolygon.id);
         if (feature) {
           polygonToUse = feature;
           // Ensure we update the state too if it was stale

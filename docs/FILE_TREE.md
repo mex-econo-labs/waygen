@@ -23,6 +23,8 @@
     ├── App.jsx
     ├── main.jsx
     ├── index.css
+    ├── contexts/
+    │   └── MapboxDrawContext.jsx
     ├── store/
     │   └── useMissionStore.js
     ├── components/

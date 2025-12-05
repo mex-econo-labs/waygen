@@ -89,9 +89,15 @@ function generateOrbitPath(polygonFeature, settings) {
 }
 
 export function generatePhotogrammetryPath(polygonFeature, settings) {
-  if (settings.pathType === 'orbit') {
-    return generateOrbitPath(polygonFeature, settings);
-  }
+  try {
+    if (!polygonFeature || !polygonFeature.geometry) {
+      console.error('Path generation failed: Invalid polygon feature');
+      return [];
+    }
+
+    if (settings.pathType === 'orbit') {
+      return generateOrbitPath(polygonFeature, settings);
+    }
 
   const { altitude, sideOverlap, frontOverlap, angle, gimbalPitch, autoDirection, generateEveryPoint, reversePath, speed, straightenLegs, waypointAction, eliminateExtraYaw } = settings;
   // ... (rest of existing grid logic)
@@ -319,4 +325,8 @@ export function generatePhotogrammetryPath(polygonFeature, settings) {
   }
 
   return waypoints;
+  } catch (error) {
+    console.error('Path generation failed:', error);
+    return []; // Return empty array on failure
+  }
 }

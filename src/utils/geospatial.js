@@ -201,10 +201,15 @@ export const calculateMaxSpeed = (waypoints, photoInterval, altitude, hfov, gimb
     }
     const minDistance = distances.length > 0 ? Math.min(...distances) : 0;
 
+    // Validate calculated values
+    if (isNaN(maxSpeed) || !isFinite(maxSpeed)) {
+        return { maxSpeed: 0, minDistance: 0, forwardOverlapDistance: 0 };
+    }
+
     return {
         maxSpeed: Math.max(0, maxSpeed), // Ensure non-negative
-        minDistance,
-        forwardOverlapDistance
+        minDistance: isNaN(minDistance) ? 0 : minDistance,
+        forwardOverlapDistance: isNaN(forwardOverlapDistance) ? 0 : forwardOverlapDistance
     };
 };
 

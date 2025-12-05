@@ -127,7 +127,7 @@ export const parseImport = async (file) => {
       }
     } catch (e) {
       console.error("KMZ Parse Error:", e);
-      throw new Error("Failed to unzip or parse KMZ.");
+      throw new Error(`KMZ import failed: ${e.message}`, { cause: e });
     }
   }
 

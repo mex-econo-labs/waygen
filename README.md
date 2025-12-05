@@ -191,8 +191,11 @@ Optimized for continuous motion and smooth video.
 Optimized for precise photogrammetry and grid surveys.
 - **Line Mode**: `<wpml:useStraightLine>1</wpml:useStraightLine>`
 - **Heading**: `<wpml:waypointHeadingMode>smoothTransition</wpml:waypointHeadingMode>` (Always smooth transition, regardless of curve/straight)
-- **Turn Mode**: `toPointAndStopWithDiscontinuityCurvature` (All points)
-- **Behavior**: Drone stops at each waypoint, aligns heading with the next path segment, and flies a strictly straight line.
+**Turn Mode**: 
+  - Start/End: `toPointAndStopWithDiscontinuityCurvature`
+  - Intermediate: `toPointAndPassWithDiscontinuityCurvature`
+- **Behavior**: Drone flies through waypoints without stopping and flies a strictly straight line.
+
 
 ---
 

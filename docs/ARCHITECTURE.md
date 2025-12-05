@@ -223,4 +223,33 @@ Waygen follows a **React-based component architecture** with unidirectional data
 
 ---
 
-**Last Updated**: 2025-11-25
+## Known Technical Debt
+
+See [CODE_QUALITY.md](./CODE_QUALITY.md) for detailed analysis. Summary:
+
+### Critical Issues
+
+| Component | Lines | Issue |
+|-----------|-------|-------|
+| `MapContainer.jsx` | 1,011 | God component: 20+ event listeners, 15 useEffect hooks |
+| `SidebarMain.jsx` | 816 | Mixed responsibilities: file I/O, path generation, settings UI |
+| `pathGenerator.js` | 321 | 35+ conditional branches, complex nesting |
+
+### Architectural Concerns
+
+1. **Global State Coupling**: `window.mapboxDraw` creates hidden dependency between MapContainer and SidebarMain. Should be replaced with React Context.
+
+2. **Store Access Pattern**: Direct `useMissionStore.getState()` calls (15+ locations) bypass React subscriptions, causing potential stale state issues.
+
+3. **Magic Numbers**: 8+ hardcoded values (82.1 HFOV, 111111 meters/degree) scattered across files instead of centralized constants.
+
+### Recommended Refactoring Priorities
+
+1. Split MapContainer into: `<MapCore />`, `<WaypointLayer />`, `<DrawingManager />`, `useWaypointDragDrop()`
+2. Split SidebarMain into: `<MissionSettings />`, `<MissionMetrics />`, `useMissionGeneration()`
+3. Replace `window.mapboxDraw` with `MapboxDrawContext`
+4. Extract magic numbers to `src/utils/constants.js`
+
+---
+
+**Last Updated**: 2025-12-05

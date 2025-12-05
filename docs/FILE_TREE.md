@@ -14,6 +14,7 @@
 ├── docs/
 │   ├── API.md
 │   ├── ARCHITECTURE.md
+│   ├── CODE_QUALITY.md
 │   ├── COMPONENTS.md
 │   ├── DEPENDENCIES.md
 │   └── FILE_TREE.md
@@ -37,7 +38,8 @@
     │       └── SearchBar.jsx
     ├── logic/
     │   ├── pathGenerator.js
-    │   └── DragRectangleMode.js
+    │   ├── DragRectangleMode.js
+    │   └── DirectSelectRectangleMode.js
     └── utils/
         ├── djiExporter.js
         ├── dronePresets.js

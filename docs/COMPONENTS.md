@@ -9,6 +9,7 @@ This guide provides detailed documentation for each component in the Waygen appl
 ### MapContainer
 
 **File**: `src/components/Map/MapContainer.jsx`
+**Lines**: 1,011 | **Complexity**: HIGH (see [CODE_QUALITY.md](./CODE_QUALITY.md))
 
 **Purpose**: Core map component integrating Mapbox GL JS with mission planning functionality.
 
@@ -90,6 +91,7 @@ const resetTrigger = useMissionStore(state => state.resetTrigger);
 ### SidebarMain
 
 **File**: `src/components/Sidebar/SidebarMain.jsx`
+**Lines**: 816 | **Complexity**: HIGH (see [CODE_QUALITY.md](./CODE_QUALITY.md))
 
 **Purpose**: Main control panel for mission settings and path generation.
 
@@ -223,4 +225,4 @@ const resetTrigger = useMissionStore(state => state.resetTrigger);
 
 ---
 
-**Last Updated**: 2025-11-25
+**Last Updated**: 2025-12-05

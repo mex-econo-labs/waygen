@@ -2,7 +2,7 @@
 
 This document provides a detailed overview of the Waygen codebase architecture, component relationships, and implementation details.
 
-**Last Updated**: 2025-12-05
+**Last Updated**: 2025-12-11
 
 ---
 
@@ -25,7 +25,7 @@ Waygen follows a **React-based component architecture** with unidirectional data
 │         │          ┌──────────────────┐ ┌──────────────────┐   │
 │         │          │ MissionMetrics   │ │   Dialogs        │   │
 │         │          │      (120)       │ │ Download (182)   │   │
-│         │          └──────────────────┘ │ Warning (98)     │   │
+│         │          └──────────────────┘ │ Warning (80)     │   │
 │         │                               └──────────────────┘   │
 └─────────────────────────────────────────────────────────────────┘
                             ↕

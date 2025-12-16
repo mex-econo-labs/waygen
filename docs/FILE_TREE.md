@@ -1,8 +1,6 @@
 # PROJECT FILE STRUCTURE
 .
 ├── README.md
-├── SPECS.md
-├── TRIAGE.md
 ├── index.html
 ├── package.json
 ├── postcss.config.js
@@ -10,7 +8,6 @@
 ├── vite.config.js
 ├── .env.local
 ├── .gitignore
-├── test_heading.cjs
 ├── docs/
 │   ├── API.md
 │   ├── ARCHITECTURE.md

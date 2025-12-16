@@ -16,8 +16,10 @@
 For detailed technical documentation, please refer to:
 
 - **[API Reference](docs/API.md)**: Comprehensive guide to the `useMissionStore` state, actions, and utility functions.
-- **[Component Reference](docs/COMPONENTS.md)**: Detailed documentation of React components, props, and UI logic.
 - **[Architecture Guide](docs/ARCHITECTURE.md)**: System overview, data flow, and rendering pipeline.
+- **[Code Quality Report](docs/CODE_QUALITY.md)**: Technical debt inventory and code quality status.
+- **[Component Reference](docs/COMPONENTS.md)**: Detailed documentation of React components, props, and UI logic.
+- **[Dependencies](docs/DEPENDENCIES.md)**: Project dependencies and their purposes.
 - **[File Tree](docs/FILE_TREE.md)**: Complete project directory structure.
 
 ---
@@ -84,14 +86,19 @@ waygen/
 ├── docs/                       # Detailed documentation
 │   ├── API.md
 │   ├── ARCHITECTURE.md
+│   ├── CODE_QUALITY.md
 │   ├── COMPONENTS.md
-│   └── FILE_TREE.md
+│   ├── DEPENDENCIES.md
+│   ├── FILE_TREE.md
+│   └── REFACTORING_PLAN.md
 ├── src/
 │   ├── components/
 │   │   ├── Map/               # Map container and tools
 │   │   ├── Sidebar/           # Mission settings and panels
 │   │   ├── Dialogs/           # Modals (Download, Warnings)
 │   │   └── Common/            # Shared UI components
+│   ├── contexts/              # React context providers
+│   ├── hooks/                 # Custom React hooks
 │   ├── logic/                 # Path generation algorithms
 │   ├── store/                 # Zustand state management
 │   ├── utils/                 # Exporters, importers, math

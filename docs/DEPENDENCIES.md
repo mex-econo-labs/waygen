@@ -36,4 +36,4 @@ This document lists the key dependencies used in the Waygen project.
 
 ---
 
-**Last Updated**: 2025-12-05
+**Last Updated**: 2025-12-11

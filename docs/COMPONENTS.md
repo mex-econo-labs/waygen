@@ -2,7 +2,7 @@
 
 This guide provides detailed documentation for each component in the Waygen application, including props, state, and key functionality.
 
-**Last Updated**: 2025-12-05
+**Last Updated**: 2025-12-11
 
 ---
 
@@ -15,7 +15,7 @@ This guide provides detailed documentation for each component in the Waygen appl
 | EditSelectedPanel | Sidebar/EditSelectedPanel.jsx | 244 | Bulk waypoint editing |
 | MissionMetrics | Sidebar/MissionMetrics.jsx | 120 | Mission statistics display |
 | DownloadDialog | Dialogs/DownloadDialog.jsx | 182 | Export configuration |
-| FlightWarningDialog | Dialogs/FlightWarningDialog.jsx | 98 | Flight duration warnings |
+| FlightWarningDialog | Dialogs/FlightWarningDialog.jsx | 80 | Flight duration warnings |
 | DrawToolbar | Map/DrawToolbar.jsx | 46 | Drawing mode selector |
 | SearchBar | Common/SearchBar.jsx | 24 | Location search |
 
@@ -246,7 +246,7 @@ export { calculateMissionDistance, formatTime, formatDistance };
 ### FlightWarningDialog
 
 **File**: `src/components/Dialogs/FlightWarningDialog.jsx`
-**Lines**: 98
+**Lines**: 80
 
 **Purpose**: Warning modal for excessive flight duration.
 
